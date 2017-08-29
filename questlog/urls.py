@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^ingest/audio/', ingestionViews.ingestAudio, name='ingestAudio'),
     url(r'^ingest/', ingestionPages.ingestionPage, name='ingestPage'),
+    url(r'^mind/', ingestionPages.ingestionPage, name='ingestPage'),
     url(r'^$', ingestionPages.ingestionPage, name='ingestPage')
 ]
 

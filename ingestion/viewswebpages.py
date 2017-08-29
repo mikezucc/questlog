@@ -36,6 +36,33 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 CURRENTLOCATION = BASE_DIR + "/ingestion/templates/" # yeah whatever
 #CURRENTLOCATION = os.getcwd().replace("\\","/")  + "/dojo/templates/"
 INGESTIONPAGETEMPLATE = CURRENTLOCATION + 'ingestionmain.html'
+LOGINTEMPLATE = CURRENTLOCATION + 'login.html'
+UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
+
+def login(request):
+    currentUser = request.session['username']
+    if currentUser != None:
+        return redirect('/mind/'+currentUser)
+
+    return render(request, LOGINTEMPLATE, {})
 
 def ingestionPage(request):
     return render(request, INGESTIONPAGETEMPLATE, {})
+
+def mindPage(request, usernameInput):
+    if usernameInput == None:
+        return redirect('/login/')
+
+    possibleUser = Minds.objects.get(username=usernameInput)
+    if possibleUser == None:
+        return redirect('/login')
+
+def filesInFrame(frameName):
+    fileList = []
+    print "here 0"
+    for filename in os.listdir(UPLOAD_DIR_3 + frameName + "/"):
+        print "here 1 " + filename
+        if filename!='.DS_Store':
+            print "here 2 " + filename
+            fileList.append(filename[:-5])
+    return fileList
