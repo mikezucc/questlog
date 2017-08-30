@@ -1,8 +1,11 @@
-<form method="POST" enctype="multipart/form-data">
-  {% if inputCode == 200 %}
-
-  {% endif %}
-  <input type="text" name="username" placeholder="Username (i.e. Rods_a_giganticFaggot)" />
-  <input type="text" name="secretword" placeholder="Secret word, please dont use your real Password" />
-  <input type="submit" name="submit" value="Login" />
+{% if inputCode == 400 %}
+No Password was entered. . .
+{% elif inputCode == 401 %}
+Password was not correct.
+{% endif %}
+<form id="loginformid" action="/auth/" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    User name: <input type="text" name="username"><br>
+    Password: <input type="password" name="password"><br>
+    <input type="submit" value="login!" />
 </form>

@@ -37,25 +37,50 @@ CURRENTLOCATION = BASE_DIR + "/ingestion/templates/" # yeah whatever
 #CURRENTLOCATION = os.getcwd().replace("\\","/")  + "/dojo/templates/"
 INGESTIONPAGETEMPLATE = CURRENTLOCATION + 'ingestionmain.html'
 LOGINTEMPLATE = CURRENTLOCATION + 'login.html'
+MINDPAGETEMPLATE = CURRENTLOCATION + 'mind.html'
 UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 
-def login(request):
-    currentUser = request.session['username']
-    if currentUser != None:
-        return redirect('/mind/'+currentUser)
+def loginPage(request):
+    request.session['username'] = ""
+    return render(request, LOGINTEMPLATE, {'inputCode':200})
 
-    return render(request, LOGINTEMPLATE, {})
+def loginRequest(request):
+    inputUsername = request.POST['username']
+    inputPassword = request.POST['password']
+    if inputPassword == None:
+        return render(request, LOGINTEMPLATE, {'inputCode':400})
+    users = Mind.objects.filter(username=inputUsername)
+    if len(users) == 0:
+        newUser = Mind.objects.create(username=inputUsername, password=inputPassword, profile_picture="[]")
+        newUser.save()
+    elif users[0].password != inputPassword:
+        return render(request, LOGINTEMPLATE, {'inputCode':401})
+    request.session['username'] = inputUsername
+    return redirect('/mind/'+inputUsername+'/')
 
 def ingestionPage(request):
-    return render(request, INGESTIONPAGETEMPLATE, {})
+    return render(request, INGESTIONPAGETEMPLATE, {'statuscode':'ok'})
+
+def mindPageCurrentUser(request):
+    currentUser = ""
+    try:
+        currentUser = request.session['username']
+    except:
+        print "shit lmao"
+    if currentUser != "":
+        return redirect('/mind/'+currentUser+'/')
+    return redirect('/login/')
 
 def mindPage(request, usernameInput):
     if usernameInput == None:
         return redirect('/login/')
-
-    possibleUser = Minds.objects.get(username=usernameInput)
-    if possibleUser == None:
-        return redirect('/login')
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return redirect('/login/')
+    possibleFrames = Frame.objects.filter(owner=possibleMind)
+    if possibleFrames == None:
+        return render(request, MINDPAGETEMPLATE, {'statuscode': 'genesis'})
+    return render(request, MINDPAGETEMPLATE, {'statuscode': 'transit', 'frames': possibleFrames})
 
 def filesInFrame(frameName):
     fileList = []

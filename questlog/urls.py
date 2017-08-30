@@ -22,8 +22,11 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^ingest/audio/', ingestionViews.ingestAudio, name='ingestAudio'),
     url(r'^ingest/', ingestionPages.ingestionPage, name='ingestPage'),
-    url(r'^mind/', ingestionPages.ingestionPage, name='ingestPage'),
-    url(r'^$', ingestionPages.ingestionPage, name='ingestPage')
+    url(r'^mymind/', ingestionPages.mindPageCurrentUser, name='ingestPage'),
+    url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='ingestPage'),
+    url(r'^auth/', ingestionPages.loginRequest, name='ingestPage'),
+    url(r'^login/', ingestionPages.loginPage, name='ingestPage'),
+    url(r'^$', ingestionPages.loginPage, name='ingestPage')
 ]
 
 """
