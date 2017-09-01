@@ -1,11 +1,11 @@
-<form method="POST" enctype="multipart/form-data">
+<form id="webIngest" method="POST" enctype="multipart/form-data" onsubmit="e.preventDefault(); return false;">
   <input type="file" name="raw" multiple >
-  <button name="submit">Upload</button>
+  <button name="upload">Upload</button>
   {% csrf_token %}
 </form>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
-<script type="text/javascript">
+<!--<script type="text/javascript">
   document.getElementsByName('submit')[0].addEventListener('click', function(e) {
       var files = document.getElementsByName('raw')[0].files[0];
       var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
@@ -27,6 +27,55 @@
       xhr.setRequestHeader("X-CSRFToken", token);
       xhr.send(fd);
   });
+</script>-->
+<script type="text/javascript">
+  // post page load shit, low Priority jS
+  window.onload = function () {
+
+    function submission(e) {
+      console.log("submit event");
+      var fd = new FormData(document.getElementById("webIngest"));
+      fd.append("source", "webIngest");
+      $.ajax({
+        url: "ingest",
+        type: "POST",
+        data: fd,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false   // tell jQuery not to set contentType
+      }).done(function( data ) {
+          console.log( data );
+      });
+      return false;
+    }
+
+    document.getElementById('webIngest').onsubmit = function(event) {
+      event.preventDefault();
+    }
+
+    document.getElementsByName('upload')[0].addEventListener('click', function(e) {
+        // var files = document.getElementsByName('raw')[0].files[0];
+        // var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+        // var fd = new FormData();
+        var fd = new FormData(document.getElementById("webIngest"));
+        console.log(fd);
+        // fd.append("memes", files);
+        var name = "memes";
+        var xhr = new XMLHttpRequest();
+        (xhr.upload || xhr).addEventListener('progress', function(e) {
+            var done = e.position || e.loaded
+            var total = e.totalSize || e.total;
+            console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+        });
+        xhr.addEventListener('load', function(e) {
+            console.log('xhr upload complete', e, this.responseText);
+            // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
+        });
+        xhr.open('POST', 'localhost:3001/ingest/', true);
+        // xhr.setRequestHeader("X-CSRFToken", '{{csrf_token}}');
+        xhr.send(fd);
+    });
+
+  };
 </script>
 
 <hr>
