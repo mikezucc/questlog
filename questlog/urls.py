@@ -15,18 +15,20 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from ingestion import views as ingestionViews
+# keep login out the API, its honestly just a bandaid for the lack
+# of intimacy that our current mediums can provide
+from ingestion import views as ingestionAPI
 from ingestion import viewswebpages as ingestionPages
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^ingest/audio/', ingestionViews.ingestAudio, name='ingestAudio'),
-    url(r'^ingest/', ingestionPages.ingestionPage, name='ingestPage'),
-    url(r'^mymind/', ingestionPages.mindPageCurrentUser, name='ingestPage'),
-    url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='ingestPage'),
-    url(r'^auth/', ingestionPages.loginRequest, name='ingestPage'),
-    url(r'^login/', ingestionPages.loginPage, name='ingestPage'),
-    url(r'^$', ingestionPages.loginPage, name='ingestPage')
+    # url(r'^ingest/', ingestionAPI.ingestFiles, name='ingestFiles'),
+    url(r'^ingest/audio/', ingestionAPI.ingestAudio, name='ingestAudio'),
+    url(r'^mymind/', ingestionPages.mindPageCurrentUser, name='mindPageCurrentUser'),
+    url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='mindPage'),
+    url(r'^auth/', ingestionPages.loginRequest, name='loginRequest'),
+    url(r'^login/', ingestionPages.loginPage, name='loginPage'),
+    url(r'^$', ingestionPages.loginPage, name='rootpage')
 ]
 
 """

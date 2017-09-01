@@ -1,8 +1,37 @@
 <form method="POST" enctype="multipart/form-data">
-  <input type="file" name="raw" />
-  <input type="submit" name="submit" value="Upload" />
+  <input type="file" name="raw" multiple >
+  <button name="submit">Upload</button>
+  {% csrf_token %}
 </form>
 
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script type="text/javascript">
+  document.getElementsByName('submit')[0].addEventListener('click', function(e) {
+      var files = document.getElementsByName('raw')[0].files[0];
+      var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+      var fd = new FormData();
+      console.log(files);
+      fd.append("memes", files);
+      var name = files.name.split(/(\\|\/)/g).pop();
+      var xhr = new XMLHttpRequest();
+      (xhr.upload || xhr).addEventListener('progress', function(e) {
+          var done = e.position || e.loaded
+          var total = e.totalSize || e.total;
+          console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+      });
+      xhr.addEventListener('load', function(e) {
+          console.log('xhr upload complete', e, this.responseText);
+          // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
+      });
+      xhr.open('POST', 'localhost:3001/ingest/', true);
+      xhr.setRequestHeader("X-CSRFToken", token);
+      xhr.send(fd);
+  });
+</script>
+
+<hr>
 {% for frame in frames %}
 <p><a>frame.foldername</a> - <a>frame.createdat</a></p>
+{% empty %}
+<h3>No Frames</h3>
 {% endfor %}

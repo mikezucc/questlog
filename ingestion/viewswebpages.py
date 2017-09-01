@@ -80,7 +80,7 @@ def mindPage(request, usernameInput):
     possibleFrames = Frame.objects.filter(owner=possibleMind)
     if possibleFrames == None:
         return render(request, MINDPAGETEMPLATE, {'statuscode': 'genesis'})
-    return render(request, MINDPAGETEMPLATE, {'statuscode': 'transit', 'frames': possibleFrames})
+    return render(request, MINDPAGETEMPLATE, {'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
 
 def filesInFrame(frameName):
     fileList = []
@@ -89,5 +89,5 @@ def filesInFrame(frameName):
         print "here 1 " + filename
         if filename!='.DS_Store':
             print "here 2 " + filename
-            fileList.append(filename[:-5])
+            fileList.append(filename)
     return fileList
