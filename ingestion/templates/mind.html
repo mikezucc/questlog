@@ -41,7 +41,8 @@
         type: "POST",
         data: fd,
         processData: false,  // tell jQuery not to process the data
-        contentType: false   // tell jQuery not to set contentType
+        contentType: false,   // tell jQuery not to set contentType
+        enctype: "multipart/form-data"
       }).done(function( data ) {
           console.log( data );
       });
@@ -70,7 +71,7 @@
             console.log('xhr upload complete', e, this.responseText);
             // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
         });
-        xhr.open('POST', 'localhost:3001/ingest/', true);
+        xhr.open('POST', 'http://192.168.1.163:3001/ingest/', true);
         // xhr.setRequestHeader("X-CSRFToken", '{{csrf_token}}');
         xhr.send(fd);
     });

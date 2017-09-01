@@ -41,7 +41,7 @@ UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 # Create your views here.
 
 # NO
-def ingestFiles(request):
+def ingestFiles(request, usernameInput):
     try:
         files = request.FILES
     except:
