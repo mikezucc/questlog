@@ -22,7 +22,7 @@ from ingestion import viewswebpages as ingestionPages
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^ingest/', ingestionAPI.ingestFiles, name='ingestFiles'),
+    url(r'^ingest/(?P<usernameInput>\w+)/', ingestionAPI.ingestFiles, name='ingestFiles'),
     url(r'^ingest/audio/', ingestionAPI.ingestAudio, name='ingestAudio'),
     url(r'^mymind/', ingestionPages.mindPageCurrentUser, name='mindPageCurrentUser'),
     url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='mindPage'),

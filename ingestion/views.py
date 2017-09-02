@@ -29,6 +29,7 @@ import os.path
 import mimetypes
 from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
+import datetime
 
 # import the web page views
 from . import *
@@ -48,6 +49,18 @@ def ingestFiles(request, usernameInput):
         print "portal >> 0 || bitch failed"
         return HttpResponse(status=400)
 
+    users = Mind.objects.filter(username=usernameInput)
+    if len(users) == 0:
+        #maybe upload to a random fucking folder i dont know??
+        print "well this is a hodge podge you see"
+        return HTTPResponse(status=403)
+    mind = users[0]
+
+    checkDirectoryForMind(mind)
+    timestampstring = unicode(datetime.datetime.now())
+    frameFolderName = UPLOAD_DIR_3 + mind.username + "/" + timestampstring + "/"
+    status = createFrameWithFolder(frameFolderName)
+
     print 'uploadDataRequest > 1 || ' + str(len(files)) + ', post '
     if files != None and len(files) > 0:
         print 'uploadDataRequest > 1 || managing ' + str(len(files)) + ' of files'
@@ -58,7 +71,7 @@ def ingestFiles(request, usernameInput):
             print "handle_uploaded_file > 0 || "
             filenameDirty = o.name.replace(" ", "_") # per Model
             print "handle_uploaded_file > 1 || initiating system write" + filenameDirty
-            with open(UPLOAD_DIR_3 + filenameDirty, 'wb+') as destination:
+            with open(frameFolderName + filenameDirty, 'wb+') as destination:
                 print "handle_uploaded_file > 2 || opening file " + filenameDirty
                 chunkCount = len(o)
                 counter = 0
@@ -68,10 +81,44 @@ def ingestFiles(request, usernameInput):
                     print "handle_uploaded_file > 4 || at " + str(counter) + ' out of ' + str(chunkCount) + ' for ' + filenameDirty
                     counter = counter + len(chunk)
                 print "handle_uploaded_file > 5 || finished writing " + filenameDirty
+        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now())
         return HttpResponse(status=200)
     print("failed to do shit")
     return HttpResponse(status=500)
 
+def createFrameWithFolder(frameFolderName):
+    print "createFrameForMind >> checking for " + frameFolderName
+    if os.path.isdir(frameFolderName):
+        print frameFolderName + " exists already"
+        return False
+    else:
+        try:
+            os.makedirs(frameFolderName)
+            print "createFrameForMind >> successfully made user folder"
+        except OSError as e:
+            print "createFrameForMind >> exception trying to create user folder"
+            if e.errno != errno.EEXIST:
+                print "createFrameForMind >> unknown exception"
+            return False
+    print "createFrameForMind >> EOF"
+    return True
+
+def checkDirectoryForMind(mind):
+    mindFolderName = UPLOAD_DIR_3 + mind.username + "/"
+    print "checkDirectoryForMind >> checking for " + mindFolderName
+    if os.path.isdir(mindFolderName):
+        print mindFolderName + " exists already"
+        return
+    else:
+        print "creating mind folder for " + mind.username
+        try:
+            os.makedirs(mindFolderName)
+            print "checkDirectoryForMind >> successfully made user folder"
+        except OSError as e:
+            print "checkDirectoryForMind >> exception trying to create user folder"
+            if e.errno != errno.EEXIST:
+                print "checkDirectoryForMind >> unknown exception"
+    print "checkDirectoryForMind >> EOF"
 
 def ingestAudio(request):
     print("scuttle butt")

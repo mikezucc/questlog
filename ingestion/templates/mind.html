@@ -37,7 +37,7 @@
       var fd = new FormData(document.getElementById("webIngest"));
       fd.append("source", "webIngest");
       $.ajax({
-        url: "ingest",
+        url: "ingest/{{username}}/",
         type: "POST",
         data: fd,
         processData: false,  // tell jQuery not to process the data
@@ -71,7 +71,7 @@
             console.log('xhr upload complete', e, this.responseText);
             // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
         });
-        xhr.open('POST', 'http://192.168.1.163:3001/ingest/', true);
+        xhr.open('POST', 'http://192.168.1.163:3001/ingest/{{username}}/', true);
         // xhr.setRequestHeader("X-CSRFToken", '{{csrf_token}}');
         xhr.send(fd);
     });
@@ -81,7 +81,7 @@
 
 <hr>
 {% for frame in frames %}
-<p><a>frame.foldername</a> - <a>frame.createdat</a></p>
+<p><a>{{frame.foldername}}</a> - <a href="/inspect/{{frame.id}}/">{{frame.createdat}}</a></p>
 {% empty %}
 <h3>No Frames</h3>
 {% endfor %}
