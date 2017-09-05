@@ -30,6 +30,7 @@ import mimetypes
 from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
 import datetime
+import magic
 
 # import the web page views
 from . import *

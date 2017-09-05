@@ -29,6 +29,7 @@ import os.path
 import mimetypes
 from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
+import magic
 
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -80,6 +81,8 @@ def mindPage(request, usernameInput):
     possibleFrames = Frame.objects.filter(owner=possibleMind)
     if possibleFrames == None:
         return render(request, MINDPAGETEMPLATE, {'statuscode': 'genesis'})
+    for frame in possibleFrames:
+
     return render(request, MINDPAGETEMPLATE, {'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
 
 def filesInFrame(frameName):
