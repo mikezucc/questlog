@@ -81,14 +81,22 @@ def mindPage(request, usernameInput):
     possibleFrames = Frame.objects.filter(owner=possibleMind)
     if possibleFrames == None:
         return render(request, MINDPAGETEMPLATE, {'statuscode': 'genesis'})
+    # is there a way to make this recursive? so its higher than 2
     for frame in possibleFrames:
-
+        foldername = frame.foldername
+        files = filesInFrame(foldername)
+        filesInFrameList = []
+        for fil in files:
+            filebuffer = magic.from_buffer(open(foldername + fil, 'r').read(1024))
+            thang = {'metadata':{'type':filebuffer},'filename':fil}
+            filesInFrameList.append(thang)
+        frame.metadata = {'content':filesInFrameList} # dictionary property
     return render(request, MINDPAGETEMPLATE, {'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
 
 def filesInFrame(frameName):
     fileList = []
     print "here 0"
-    for filename in os.listdir(UPLOAD_DIR_3 + frameName + "/"):
+    for filename in os.listdir(frameName):
         print "here 1 " + filename
         if filename!='.DS_Store':
             print "here 2 " + filename

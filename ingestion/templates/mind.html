@@ -81,7 +81,14 @@
 
 <hr>
 {% for frame in frames %}
-<p><a>{{frame.foldername}}</a> - <a href="/inspect/{{frame.id}}/">{{frame.createdat}}</a></p>
+<p><a>{{frame.foldername}}</a> - <a href="/inspect/{{frame.id}}/">{{frame.createdat}}</a>
+  <a>frame.metadata.content:</a>
+  <p>
+  {% for fil in frame.metadata.content %}
+    <a id="expand('{{frame.id}}', '{{fil.filename}}')">{{fil.filename}}</a> - <a href="/filter/?type={{fil.metadata.type}}">{{fil.metadata.type}}</a>
+  {% endfor %}
+  </p>
+</a></p>
 {% empty %}
 <h3>No Frames</h3>
 {% endfor %}
