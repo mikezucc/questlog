@@ -33,9 +33,11 @@ import io
 import json
 from google.protobuf.json_format import MessageToJson
 import traceback
+from enum import Enum
 
 from google.cloud import vision
 from google.cloud.vision import types
+from PIL import Image, ImageDraw
 
 # [START def_detect_faces]
 def detect_faces(path):
@@ -67,16 +69,38 @@ def detect_faces(path):
                     for vertex in face.bounding_poly.vertices])
 
         print('face bounds: {}'.format(','.join(vertices)))
+    highlight_faces(path, faces, path[:-4] + '-detectfaces' + path[-4:])
 
-    jsonRes = MessageToJson(faces)
-    with open(path+"-faces.json", 'wb+') as jsonAPIResultsFile:
-        print jsonRes
-        jsonAPIResultsFile.write(jsonRes)
-        jsonAPIResultsFile.close()
-        return 200
-    return 400
+    # jsonRes = MessageToJson(faces)
+    # with open(path+"-faces.json", 'wb+') as jsonAPIResultsFile:
+    #     print jsonRes
+    #     jsonAPIResultsFile.write(jsonRes)
+    #     jsonAPIResultsFile.close()
+    #     return 200
+    #  return 400
+    return 200
     # [END migration_face_detection]
 # [END def_detect_faces]
+
+def highlight_faces(image, faces, output_filename):
+    """Draws a polygon around the faces, then saves to output_filename.
+
+    Args:
+      image: a file containing the image with the faces.
+      faces: a list of faces found in the file. This should be in the format
+          returned by the Vision API.
+      output_filename: the name of the image file to be created, where the
+          faces have polygons drawn around them.
+    """
+    im = Image.open(image)
+    draw = ImageDraw.Draw(im)
+
+    for face in faces:
+        box = [(vertex.x, vertex.y)
+               for vertex in face.bounding_poly.vertices]
+        draw.line(box + [box[0]], width=5, fill='#00ff00')
+
+    im.save(output_filename)
 
 
 # [START def_detect_faces_uri]
@@ -105,13 +129,16 @@ def detect_faces_uri(uri):
                     for vertex in face.bounding_poly.vertices])
 
         print('face bounds: {}'.format(','.join(vertices)))
-    jsonRes = MessageToJson(faces)
-    with open(path+"-faces.json", 'wb+') as jsonAPIResultsFile:
-        print jsonRes
-        jsonAPIResultsFile.write(jsonRes)
-        jsonAPIResultsFile.close()
-        return 200
-    return 400
+    highlight_faces(path, faces, path[:-4] + '-detectfaces' + path[-4:])
+
+    # jsonRes = MessageToJson(faces)
+    # with open(path+"-faces.json", 'wb+') as jsonAPIResultsFile:
+    #     print jsonRes
+    #     jsonAPIResultsFile.write(jsonRes)
+    #     jsonAPIResultsFile.close()
+    #     return 200
+    #  return 400
+    return 200
 # [END def_detect_faces_uri]
 
 
@@ -130,10 +157,12 @@ def detect_labels(path):
     labels = response.label_annotations
     print('Labels:')
 
+    labelsList = []
     for label in labels:
-        print(label.description)
+        labelsList.append(label.description)
+    labelJSON = {"labels":labelsList}
 
-    jsonRes = MessageToJson(labels)
+    jsonRes = json.dumps(labelJSON)
     with open(path+"-labels.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -155,10 +184,12 @@ def detect_labels_uri(uri):
     labels = response.label_annotations
     print('Labels:')
 
+    labelsList = []
     for label in labels:
-        print(label.description)
+        labelsList.append(label.description)
+    labelJSON = {"labels":labelsList}
 
-    jsonRes = MessageToJson(labels)
+    jsonRes = json.dumps(labelJSON)
     with open(path+"-labels.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -183,14 +214,16 @@ def detect_landmarks(path):
     landmarks = response.landmark_annotations
     print('Landmarks:')
 
+    landmarksList = []
     for landmark in landmarks:
         print(landmark.description)
+        landmarksList.append(landmark.description)
         for location in landmark.locations:
             lat_lng = location.lat_lng
             print('Latitude'.format(lat_lng.latitude))
             print('Longitude'.format(lat_lng.longitude))
-
-    jsonRes = MessageToJson(landmarks)
+    landmarksJSON = {"landmarks":landmarksList}
+    jsonRes = json.dumps(landmarksJSON)
     with open(path+"-landmarks.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -212,10 +245,13 @@ def detect_landmarks_uri(uri):
     landmarks = response.landmark_annotations
     print('Landmarks:')
 
+    landmarksList = []
     for landmark in landmarks:
+        landmarksList.append(landmark.description)
         print(landmark.description)
 
-    jsonRes = MessageToJson(landmarks)
+    landmarksJSON = {"landmarks":landmarksList}
+    jsonRes = json.dumps(landmarksJSON)
     with open(path+"-landmarks.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -240,10 +276,13 @@ def detect_logos(path):
     logos = response.logo_annotations
     print('Logos:')
 
+    logosList = []
     for logo in logos:
+        logosList.append(logo.description)
         print(logo.description)
 
-    jsonRes = MessageToJson(logos)
+    logosJSON = {"logos":logosList}
+    jsonRes = json.dumps(logosJSON)
     with open(path+"-logos.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -265,10 +304,13 @@ def detect_logos_uri(uri):
     logos = response.logo_annotations
     print('Logos:')
 
+    logosList = []
     for logo in logos:
+        logosList.append(logo.description)
         print(logo.description)
 
-    jsonRes = MessageToJson(logos)
+    logosJSON = {"logos":logosList}
+    jsonRes = json.dumps(logosJSON)
     with open(path+"-logos.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -344,17 +386,20 @@ def detect_text(path):
     texts = response.text_annotations
     print('Texts:')
 
+    textsList = []
     for text in texts:
-        print('\n"{}"'.format(text.description))
+        textsList.append(text.description)
+        # print('\n"{}"'.format(text.description))
 
         vertices = (['({},{})'.format(vertex.x, vertex.y)
                     for vertex in text.bounding_poly.vertices])
 
-        print('bounds: {}'.format(','.join(vertices)))
+        # print('bounds: {}'.format(','.join(vertices)))
 
-    jsonRes = MessageToJson(texts)
+    textsJSON = {"texts":textsList}
+    jsonRes = json.dumps(textsJSON)
     with open(path+"-text.json", 'wb+') as jsonAPIResultsFile:
-        print jsonRes
+        # print jsonRes
         jsonAPIResultsFile.write(jsonRes)
         jsonAPIResultsFile.close()
         return 200
@@ -374,7 +419,9 @@ def detect_text_uri(uri):
     texts = response.text_annotations
     print('Texts:')
 
+    textsList = []
     for text in texts:
+        textsList.append(text.description)
         print('\n"{}"'.format(text.description))
 
         vertices = (['({},{})'.format(vertex.x, vertex.y)
@@ -382,7 +429,8 @@ def detect_text_uri(uri):
 
         print('bounds: {}'.format(','.join(vertices)))
 
-    jsonRes = MessageToJson(texts)
+    textsJSON = {"texts":textsList}
+    jsonRes = json.dumps(textsJSON)
     with open(path+"-text.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -407,14 +455,26 @@ def detect_properties(path):
     props = response.image_properties_annotation
     print('Properties:')
 
+    colorsList = []
     for color in props.dominant_colors.colors:
-        print('fraction: {}'.format(color.pixel_fraction))
-        print('\tr: {}'.format(color.color.red))
-        print('\tg: {}'.format(color.color.green))
-        print('\tb: {}'.format(color.color.blue))
-        print('\ta: {}'.format(color.color.alpha))
-
-    jsonRes = MessageToJson(response)
+        jsonFriendly = {"fraction":color.pixel_fraction,
+        "red": (color.color.red if color.color.red != None else 0.0),
+        "green":(color.color.green if color.color.green != None else 0.0),
+        "alpha":(color.color.alpha if color.color.alpha != None else 0.0),
+        "blue":(color.color.blue if color.color.blue != None else 0.0)}
+        if jsonFriendly['alpha'] == None:
+            jsonFriendly['alpha'] = 1.0
+        elif len(str(jsonFriendly['alpha'])) < 2:
+             jsonFriendly['alpha'] = 1.0
+        colorsList.append(jsonFriendly)
+        # print('\tr: {}'.format(color.color.red))
+        # print('fraction: {}'.format(color.pixel_fraction))
+        # print('\tg: {}'.format(color.color.green))
+        # print('\tb: {}'.format(color.color.blue))
+        # print('\ta: {}'.format(color.color.alpha))
+    colorsJSON = {"colors":colorsList}
+    print colorsJSON
+    jsonRes = json.dumps(colorsJSON)
     with open(path+"-properties.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -436,14 +496,16 @@ def detect_properties_uri(uri):
     props = response.image_properties_annotation
     print('Properties:')
 
+    colorsList = []
     for color in props.dominant_colors.colors:
-        print('frac: {}'.format(color.pixel_fraction))
+        colorsList.append({"fraction":color.pixel_fraction,"red":color.color.red,"green":color.color.green,"blue":color.color.blue,"alpha":color.color.alpha})
         print('\tr: {}'.format(color.color.red))
+        print('fraction: {}'.format(color.pixel_fraction))
         print('\tg: {}'.format(color.color.green))
         print('\tb: {}'.format(color.color.blue))
         print('\ta: {}'.format(color.color.alpha))
-
-    jsonRes = MessageToJson(response)
+    colorsJSON = {"colors":colorsList}
+    jsonRes = json.dumps(colorsJSON)
     with open(path+"-properties.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -551,6 +613,32 @@ def detect_web_uri(uri):
     return 400
 # [END def_detect_web_uri]
 
+def draw_hint(image_file, vects, hintNumber):
+    """Draw a border around the image using the hints in the vector list."""
+    # [START draw_hint]
+
+    im = Image.open(image_file)
+    draw = ImageDraw.Draw(im)
+    draw.polygon([
+        vects[0].x, vects[0].y,
+        vects[1].x, vects[1].y,
+        vects[2].x, vects[2].y,
+        vects[3].x, vects[3].y], None, 'red')
+    im.save(image_file + "-" + str(hintNumber) + image_file[-4:])
+    # [END draw_hint]
+    return vects
+
+
+def crop_to_hint(image_file, vects, hintNumber):
+    """Crop the image using the hints in the vector list."""
+    # [START crop_to_hint
+
+    im = Image.open(image_file)
+    im2 = im.crop([vects[0].x, vects[0].y,
+                  vects[2].x - 1, vects[2].y - 1])
+    im.save(image_file + "-" + str(hintNumber) + image_file[-4:])
+    # [END crop_to_hint]
+    return vects
 
 # [START def_detect_crop_hints]
 def detect_crop_hints(path):
@@ -562,21 +650,29 @@ def detect_crop_hints(path):
         content = image_file.read()
     image = types.Image(content=content)
 
+    # worth looking at this bullshit constant right here
     crop_hints_params = types.CropHintsParams(aspect_ratios=[1.77])
     image_context = types.ImageContext(crop_hints_params=crop_hints_params)
 
     response = client.crop_hints(image=image, image_context=image_context)
     hints = response.crop_hints_annotation.crop_hints
 
+    cropHintsList = []
+    count = 0
     for n, hint in enumerate(hints):
         print('\nCrop Hint: {}'.format(n))
-
+        crop_to_hint(path, hint.bounding_poly.vertices, count)
+        count = count + 1
         vertices = (['({},{})'.format(vertex.x, vertex.y)
                     for vertex in hint.bounding_poly.vertices])
-
         print('bounds: {}'.format(','.join(vertices)))
+        vertexes = []
+        for vertex in hint.bounding_poly.vertices:
+            vertexes.append({"x":vertex.x,"y":vertex.y})
+        cropHintsList.append(vertexes)
 
-    jsonRes = MessageToJson(response)
+    cropHintsJSON = {"crophints":cropHintsList}
+    jsonRes = json.dumps(cropHintsJSON)
     with open(path+"-crophints.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -600,15 +696,22 @@ def detect_crop_hints_uri(uri):
     response = client.crop_hints(image=image, image_context=image_context)
     hints = response.crop_hints_annotation.crop_hints
 
+    cropHintsList = []
+    count = 0
     for n, hint in enumerate(hints):
         print('\nCrop Hint: {}'.format(n))
-
+        crop_to_hint(path, hint.bounding_poly.vertices, count)
+        count = count + 1
         vertices = (['({},{})'.format(vertex.x, vertex.y)
                     for vertex in hint.bounding_poly.vertices])
-
         print('bounds: {}'.format(','.join(vertices)))
+        vertexes = []
+        for vertex in hint.bounding_poly.vertices:
+            vertexes.append({"x":vertex.x,"y":vertex.y})
+        cropHintsList.append(vertexes)
 
-    jsonRes = MessageToJson(response)
+    cropHintsJSON = {"crophints":cropHintsList}
+    jsonRes = json.dumps(cropHintsJSON)
     with open(path+"-crophints.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -617,6 +720,68 @@ def detect_crop_hints_uri(uri):
     return 400
 # [END def_detect_crop_hints_uri]
 
+class FeatureType(Enum):
+    PAGE = 1
+    BLOCK = 2
+    PARA = 3
+    WORD = 4
+    SYMBOL = 5
+
+
+def draw_boxes(image, bounds, color):
+    """Draw a border around the image using the hints in the vector list."""
+    # [START draw_blocks]
+    draw = ImageDraw.Draw(image)
+
+    for bound in bounds:
+        draw.polygon([
+            bound.vertices[0].x, bound.vertices[0].y,
+            bound.vertices[1].x, bound.vertices[1].y,
+            bound.vertices[2].x, bound.vertices[2].y,
+            bound.vertices[3].x, bound.vertices[3].y], None, color)
+    return image
+    # [END draw_blocks]
+
+def get_document_bounds(document, feature):
+    # [START detect_bounds]
+    # Collect specified feature bounds by enumerating all document features
+    bounds = []
+    for page in document.pages:
+        for block in page.blocks:
+            for paragraph in block.paragraphs:
+                for word in paragraph.words:
+                    for symbol in word.symbols:
+                        if (feature == FeatureType.SYMBOL):
+                            bounds.append(symbol.bounding_box)
+
+                    if (feature == FeatureType.WORD):
+                        bounds.append(word.bounding_box)
+
+                if (feature == FeatureType.PARA):
+                    bounds.append(paragraph.bounding_box)
+
+            if (feature == FeatureType.BLOCK):
+                bounds.append(block.bounding_box)
+
+        if (feature == FeatureType.PAGE):
+            bounds.append(block.bounding_box)
+
+    # The list `bounds` contains the coordinates of the bounding boxes.
+    # [END detect_bounds]
+    return bounds
+
+def render_doc_text(document, filein, fileout):
+    # [START render_doc_text]
+    image = Image.open(filein)
+    bounds = get_document_bounds(document, FeatureType.PAGE)
+    draw_boxes(image, bounds, 'blue')
+    bounds = get_document_bounds(document, FeatureType.PARA)
+    draw_boxes(image, bounds, 'red')
+    bounds = get_document_bounds(document, FeatureType.WORD)
+    draw_boxes(image, bounds, 'yellow')
+
+    image.save(fileout)
+    # [END render_doc_text]
 
 # [START def_detect_document]
 def detect_document(path):
@@ -632,6 +797,8 @@ def detect_document(path):
     response = client.document_text_detection(image=image)
     document = response.full_text_annotation
 
+    render_doc_text(document, path, path[:-4] + '-textboxes' + path[-4:])
+
     for page in document.pages:
         for block in page.blocks:
             block_words = []
@@ -646,12 +813,12 @@ def detect_document(path):
             for symbol in block_symbols:
                 block_text = block_text + symbol.text
 
-            print('Block Content: {}'.format(block_text))
-            print('Block Bounds:\n {}'.format(block.bounding_box))
+            # print('Block Content: {}'.format(block_text))
+            # print('Block Bounds:\n {}'.format(block.bounding_box))
 
     jsonRes = MessageToJson(response)
     with open(path+"-document.json", 'wb+') as jsonAPIResultsFile:
-        print jsonRes
+        # print jsonRes
         jsonAPIResultsFile.write(jsonRes)
         jsonAPIResultsFile.close()
         return 200
@@ -729,6 +896,6 @@ def runGoogleVisionSuite(path):
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_document(path)(path)
+        detect_document(path)
     except Exception as e:
         print traceback.format_exc()

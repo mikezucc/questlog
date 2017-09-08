@@ -56,17 +56,20 @@ def processMind(request, usernameInput):
         files = filesInFrame(foldername)
         filesInFrameList = []
         print files
+        if len(files) > 1:
+            print "\t**\n\tFrame Already processing\n\t**"
+            continue
         for fil in files:
-            try:
-                if fil.index("-processStatus.txt"):
-                    continue
-                print fil + "-processStatus.txt"
-                files.index(fil + "-processStatus.txt")
-                continue
-            except:
-                # maybe this can be done by the file level
-                print "never processed this directory"
-                startFileProcessingPipeline({"frameid":frame.id,"filepathURI":(foldername+fil)})
+            # try:
+            #     if fil.index("-processStatus.txt"):
+            #         continue
+            #     print fil + "-processStatus.txt"
+            #     files.index(fil + "-processStatus.txt")
+            #     continue
+            # except:
+            #     # maybe this can be done by the file level
+            #     print "never processed this directory"
+            startFileProcessingPipeline({"frameid":frame.id,"filepathURI":(foldername+fil)})
     return HttpResponse(status=200)
 
 # dictionary input {"frameid":<frame.id>, "file":<full path URI filename>}
@@ -84,7 +87,9 @@ def startFileProcessingPipeline(frameDictionary):
         print slugFileType
 
         try:
-            if imageFileTypes.index(slugFileType):
+            print "checking " + slugFileType + " against "
+            print imageFileTypes
+            if imageFileTypes.index(slugFileType) != None:
                 print "--------------------------------------------------------------------------"
                 print "*** QUEUE PROCESS FOR " + filepathURI
                 try:
@@ -103,9 +108,9 @@ def startFileProcessingPipeline(frameDictionary):
 
         openFile.close()
 
-        with open(filepathURI+'-processStatus.txt', 'w+') as statusFile:
-            statusFile.write("finished")
-            statusFile.close()
+        # with open(filepathURI+'-processStatus.txt', 'w+') as statusFile:
+        #     statusFile.write("finished")
+        #     statusFile.close()
 
 def processImageFile(frameDictionary):
     print "processing image" + json.dumps(frameDictionary)
