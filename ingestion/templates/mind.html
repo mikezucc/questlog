@@ -3,6 +3,12 @@
   <button name="upload">Upload</button>
   {% csrf_token %}
 </form>
+<h1>{{statuscode}}</h1>
+<form id="tokenSubmit" display="none" method="POST" enctype="multipart/form-data" onsubmit="e.preventDefault(); return false;">
+  {% csrf_token %}
+</form>
+<hr>
+<button id="processtrigger">process</button>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <!--<script type="text/javascript">
@@ -51,6 +57,22 @@
 
     document.getElementById('webIngest').onsubmit = function(event) {
       event.preventDefault();
+    }
+
+    document.getElementById('processtrigger').onclick = function(event) {
+      console.log("submit event");
+      var fd = new FormData(document.getElementById("tokenSubmit"));
+      $.ajax({
+        url: "http://192.168.1.163:3001/process/{{username}}/",
+        type: "POST",
+        data: fd,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false,   // tell jQuery not to set contentType
+        enctype: "multipart/form-data"
+      }).done(function( data ) {
+          console.log( data );
+      });
+      return false;
     }
 
     document.getElementsByName('upload')[0].addEventListener('click', function(e) {

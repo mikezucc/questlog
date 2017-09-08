@@ -53,7 +53,7 @@ def ingestFiles(request, usernameInput):
     if len(users) == 0:
         #maybe upload to a random fucking folder i dont know??
         print "well this is a hodge podge you see"
-        return HTTPResponse(status=403)
+        return HttpResponse(status=403)
     mind = users[0]
 
     checkDirectoryForMind(mind)
@@ -119,39 +119,3 @@ def checkDirectoryForMind(mind):
             if e.errno != errno.EEXIST:
                 print "checkDirectoryForMind >> unknown exception"
     print "checkDirectoryForMind >> EOF"
-
-def ingestAudio(request):
-    print("scuttle butt")
-    return HttpResponse("We are out of the mild sauce senor.")
-
-def ingestAudioList(request, username):
-    return HttpResponse("List of user's bullshit here")
-
-def ingestAudioReceiveUpload(request, username):
-    try:
-        files = request.FILES
-    except:
-        print "portal >> 0 || bitch failed"
-
-    print 'ingestAudioReceiveUpload > 1 || ' + str(len(files)) + ', post '
-    if files != None and len(files) > 0:
-        print 'ingestAudioReceiveUpload > 1 || managing ' + str(len(files)) + ' of files'
-        for f in files:
-            print 'ingestAudioReceiveUpload > 2 || queueing ' + files[f].name
-            o = files[f]
-            print 'ingestAudioReceiveUpload > 2.1 || o as ' + str(len(o))
-            print "handle_uploaded_file > 0 || "
-            filenameDirty = o.name.replace(" ", "_") # per Model
-            print "handle_uploaded_file > 1 || initiating system write" + filenameDirty
-            with open(UPLOAD_DIR_3 + filenameDirty, 'wb+') as destination:
-                print "handle_uploaded_file > 2 || opening file " + filenameDirty
-                chunkCount = len(o)
-                counter = 0
-                print "handle_uploaded_file > 3 || writing " + str(chunkCount) + " chunks for " + filenameDirty
-                for chunk in o.chunks():
-                    destination.write(chunk)
-                    print "handle_uploaded_file > 4 || at " + str(counter) + ' out of ' + str(chunkCount) + ' for ' + filenameDirty
-                    counter = counter + len(chunk)
-                print "handle_uploaded_file > 5 || finished writing " + filenameDirty
-
-    return HttpResponse(status=200)
