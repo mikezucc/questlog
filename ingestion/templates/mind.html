@@ -107,7 +107,8 @@
   <a>frame.metadata.content:</a>
   <p>
   {% for fil in frame.metadata.content %}
-    <a id="expand('{{frame.id}}', '{{fil.filename}}')">{{fil.filename}}</a> - <a href="/filter/?type={{fil.metadata.type}}">{{fil.metadata.type}}</a>
+    <a style="padding-left:50px;" id="expand('{{frame.id}}', '{{fil.filename}}')">{{fil.filename}}</a> - <a href="/filter/?type={{fil.metadata.type}}">{{fil.metadata.type}}</a>
+    <br>
   {% endfor %}
   </p>
 </a></p>

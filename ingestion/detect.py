@@ -31,6 +31,8 @@ https://cloud.google.com/vision/docs.
 import argparse
 import io
 import json
+from google.protobuf.json_format import MessageToJson
+import traceback
 
 from google.cloud import vision
 from google.cloud.vision import types
@@ -66,7 +68,7 @@ def detect_faces(path):
 
         print('face bounds: {}'.format(','.join(vertices)))
 
-    jsonRes = json.dumps(faces)
+    jsonRes = MessageToJson(faces)
     with open(path+"-faces.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -103,7 +105,7 @@ def detect_faces_uri(uri):
                     for vertex in face.bounding_poly.vertices])
 
         print('face bounds: {}'.format(','.join(vertices)))
-    jsonRes = json.dumps(faces)
+    jsonRes = MessageToJson(faces)
     with open(path+"-faces.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -131,7 +133,7 @@ def detect_labels(path):
     for label in labels:
         print(label.description)
 
-    jsonRes = json.dumps(labels)
+    jsonRes = MessageToJson(labels)
     with open(path+"-labels.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -156,7 +158,7 @@ def detect_labels_uri(uri):
     for label in labels:
         print(label.description)
 
-    jsonRes = json.dumps(labels)
+    jsonRes = MessageToJson(labels)
     with open(path+"-labels.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -188,7 +190,7 @@ def detect_landmarks(path):
             print('Latitude'.format(lat_lng.latitude))
             print('Longitude'.format(lat_lng.longitude))
 
-    jsonRes = json.dumps(landmarks)
+    jsonRes = MessageToJson(landmarks)
     with open(path+"-landmarks.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -213,7 +215,7 @@ def detect_landmarks_uri(uri):
     for landmark in landmarks:
         print(landmark.description)
 
-    jsonRes = json.dumps(landmarks)
+    jsonRes = MessageToJson(landmarks)
     with open(path+"-landmarks.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -241,7 +243,7 @@ def detect_logos(path):
     for logo in logos:
         print(logo.description)
 
-    jsonRes = json.dumps(logos)
+    jsonRes = MessageToJson(logos)
     with open(path+"-logos.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -266,7 +268,7 @@ def detect_logos_uri(uri):
     for logo in logos:
         print(logo.description)
 
-    jsonRes = json.dumps(logos)
+    jsonRes = MessageToJson(logos)
     with open(path+"-logos.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -350,7 +352,7 @@ def detect_text(path):
 
         print('bounds: {}'.format(','.join(vertices)))
 
-    jsonRes = json.dumps(texts)
+    jsonRes = MessageToJson(texts)
     with open(path+"-text.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -380,7 +382,7 @@ def detect_text_uri(uri):
 
         print('bounds: {}'.format(','.join(vertices)))
 
-    jsonRes = json.dumps(texts)
+    jsonRes = MessageToJson(texts)
     with open(path+"-text.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -412,7 +414,7 @@ def detect_properties(path):
         print('\tb: {}'.format(color.color.blue))
         print('\ta: {}'.format(color.color.alpha))
 
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-properties.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -441,7 +443,7 @@ def detect_properties_uri(uri):
         print('\tb: {}'.format(color.color.blue))
         print('\ta: {}'.format(color.color.alpha))
 
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-properties.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -492,7 +494,7 @@ def detect_web(path):
             print('Score      : {}'.format(entity.score))
             print('Description: {}'.format(entity.description))
 
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-web.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -540,7 +542,7 @@ def detect_web_uri(uri):
             print('Score      : {}'.format(entity.score))
             print('Description: {}'.format(entity.description))
 
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-web.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -574,7 +576,7 @@ def detect_crop_hints(path):
 
         print('bounds: {}'.format(','.join(vertices)))
 
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-crophints.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -606,7 +608,7 @@ def detect_crop_hints_uri(uri):
 
         print('bounds: {}'.format(','.join(vertices)))
 
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-crophints.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -647,7 +649,7 @@ def detect_document(path):
             print('Block Content: {}'.format(block_text))
             print('Block Bounds:\n {}'.format(block.bounding_box))
 
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-document.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -684,7 +686,7 @@ def detect_document_uri(uri):
 
             print('Block Content: {}'.format(block_text))
             print('Block Bounds:\n {}'.format(block.bounding_box))
-    jsonRes = json.dumps(response)
+    jsonRes = MessageToJson(response)
     with open(path+"-document.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -694,13 +696,39 @@ def detect_document_uri(uri):
 # [END def_detect_document_uri]
 
 def runGoogleVisionSuite(path):
-    detect_faces(path)
-    detect_labels(path)
-    detect_landmarks(path)
-    detect_logos(path)
-    detect_safe_search(path)
-    detect_text(path)
-    detect_properties(path)
-    detect_web(path)
-    detect_crop_hints(path)
-    detect_document(path)
+    try:
+        detect_faces(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_labels(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_landmarks(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_logos(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_text(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_properties(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_web(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_crop_hints(path)
+    except Exception as e:
+        print traceback.format_exc()
+    try:
+        detect_document(path)(path)
+    except Exception as e:
+        print traceback.format_exc()
