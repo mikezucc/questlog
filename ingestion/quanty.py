@@ -91,7 +91,7 @@ def startFileProcessingPipeline(frameDictionary):
             print imageFileTypes
             if imageFileTypes.index(slugFileType) != None:
                 print "--------------------------------------------------------------------------"
-                print "*** QUEUE PROCESS FOR " + filepathURI
+                print "*** queue VISION process for  " + filepathURI
                 try:
                     processImageFile(frameDictionary)
                 except Exception as e:
@@ -102,7 +102,13 @@ def startFileProcessingPipeline(frameDictionary):
 
         try:
             if soundFileTypes.index(slugFileType):
-                processSoundFile(frameDictionary)
+                print "--------------------------------------------------------------------------"
+                print "*** queue AUDIO process for " + filepathURI
+                try:
+                    processImageFile(frameDictionary)
+                except Exception as e:
+                    print traceback.format_exc()
+                print "--------------------------------------------------------------------------"
         except:
             print "not an soundfile"
 
