@@ -105,7 +105,7 @@ def startFileProcessingPipeline(frameDictionary):
                 print "--------------------------------------------------------------------------"
                 print "*** queue AUDIO process for " + filepathURI
                 try:
-                    processImageFile(frameDictionary)
+                    transcribe_file(frameDictionary)
                 except Exception as e:
                     print traceback.format_exc()
                 print "--------------------------------------------------------------------------"

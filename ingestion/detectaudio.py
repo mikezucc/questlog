@@ -38,10 +38,20 @@ import io
 from . import *
 from viewswebpages import *
 from googleaudio import *
-
+from pydub import AudioSegment
+``
+#
+# contains the path to the converted file
+#
+def convertToL16(path):
+    openedFile = AudioSegment.from_file(path)
+    convertFilePath = path+"-L16convert.raw"
+    openedFile.export(convertFilePath, format="pcm_s16le", parameters=[])
+    return convertFilePath
 
 # [START def_transcribe_file]
-def transcribe_file(speech_file):
+def transcribe_file():
+    speech_file = frameDictionary['filepathURI']
     """Transcribe the given audio file asynchronously."""
     from google.cloud import speech
     from google.cloud.speech import enums
@@ -49,7 +59,8 @@ def transcribe_file(speech_file):
     client = speech.SpeechClient()
 
     # [START migration_async_request]
-    with io.open(speech_file, 'rb') as audio_file:
+    convertedFilePath = convertToL16(speech_file)
+    with io.open(convertedFilePath, 'rb') as audio_file:
         content = audio_file.read()
 
     audio = types.RecognitionAudio(content=content)
