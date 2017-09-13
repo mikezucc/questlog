@@ -49,8 +49,8 @@ def runGoogleSpeechSuite(frameDictionary):
 def convertToL16(path):
     openedFile = AudioSegment.from_file(path)
     convertFilePath = path+"-L16convert.raw"
-    #"-b:a", "16000"
-    openedFile.export(convertFilePath, format="s16le", parameters=[])
+    #"-b:a", "16000""-b:a", "16000"
+    openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "48000"])
     return convertFilePath
 
 # [START def_transcribe_file]
