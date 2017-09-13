@@ -37,21 +37,25 @@ import io
 # these views
 from . import *
 from viewswebpages import *
-from googleaudio import *
+from google.cloud import *
 from pydub import AudioSegment
-``
+
+def runGoogleSpeechSuite(frameDictionary):
+    transcribe_file(frameDictionary)
+
 #
 # contains the path to the converted file
 #
 def convertToL16(path):
     openedFile = AudioSegment.from_file(path)
     convertFilePath = path+"-L16convert.raw"
-    openedFile.export(convertFilePath, format="pcm_s16le", parameters=[])
+    #"-b:a", "16000"
+    openedFile.export(convertFilePath, format="s16le", parameters=[])
     return convertFilePath
 
 # [START def_transcribe_file]
-def transcribe_file():
-    speech_file = frameDictionary['filepathURI']
+def transcribe_file(filepathURI):
+    speech_file = filepathURI
     """Transcribe the given audio file asynchronously."""
     from google.cloud import speech
     from google.cloud.speech import enums
@@ -66,7 +70,7 @@ def transcribe_file():
     audio = types.RecognitionAudio(content=content)
     config = types.RecognitionConfig(
         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
+        sample_rate_hertz=48000,
         language_code='en-US')
 
     # [START migration_async_response]
@@ -76,10 +80,23 @@ def transcribe_file():
     print('Waiting for operation to complete...')
     result = operation.result(timeout=90)
 
-    alternatives = result.results[0].alternatives
-    for alternative in alternatives:
-        print('Transcript: {}'.format(alternative.transcript))
-        print('Confidence: {}'.format(alternative.confidence))
+    resultsJSONList = []
+    for res in result.results:
+        phrasonJSON = []
+        for alternative in res.alternatives:
+            scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence)}
+            phrasonJSON.append(scopeJSON)
+            print('Transcript: {}'.format(alternative.transcript))
+            print('Confidence: {}'.format(alternative.confidence))
+        resultsJSONList.append(phrasonJSON)
+
+    jsonRes = json.dumps(resultsJSONList)
+    with open(filepathURI+"-transcript.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return
+    return
     # [END migration_async_response]
 # [END def_transcribe_file]
 

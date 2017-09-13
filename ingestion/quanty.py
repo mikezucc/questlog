@@ -36,10 +36,11 @@ import traceback
 # these views
 from . import *
 from viewswebpages import *
-from detect import *
+from detectvision import *
+from detectaudio import *
 
 imageFileTypes = ["jpeg", "jpg", "png"]
-soundFileTypes = ["mp3", "wav", "flac", "raw"]
+soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]
 
 def processMind(request, usernameInput):
     print 'for fucks sake'
@@ -105,7 +106,7 @@ def startFileProcessingPipeline(frameDictionary):
                 print "--------------------------------------------------------------------------"
                 print "*** queue AUDIO process for " + filepathURI
                 try:
-                    transcribe_file(frameDictionary)
+                    processSoundFile(frameDictionary)
                 except Exception as e:
                     print traceback.format_exc()
                 print "--------------------------------------------------------------------------"
