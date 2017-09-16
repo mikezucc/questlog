@@ -159,7 +159,14 @@ def detect_labels(path):
 
     labelsList = []
     for label in labels:
-        labelsList.append(label.description)
+        labelModel = {"description": label.description,
+            "mid":label.mid,
+            "locale":label.locale,
+            "score":label.score,
+            "confidence":label.confidence,
+            "topicality":label.topicality}
+
+        labelsList.append(labelModel)
     labelJSON = {"labels":labelsList}
 
     jsonRes = json.dumps(labelJSON)

@@ -73,6 +73,19 @@ def processMind(request, usernameInput):
             startFileProcessingPipeline({"frameid":frame.id,"filepathURI":(foldername+fil)})
     return HttpResponse(status=200)
 
+def saveFileMetaInfo(fileTypeMagic):
+    splitFileType = fileTypeMagic.split(',')
+    fileMetadataJSON = {}
+    firstRead = False
+    for slugMetaSegment in slugFileType:
+        if not firstRead:
+            fileMetadataJSON['type'] = slugMetaSegment
+            continue
+        if "EXIF" in slugMetaSegment:
+            fileMetadataJSON['EXIF'] = extractEXIF(slugMetaSegment)
+        segmentSegments = slugMetaSegment.split(' ').lower()
+
+
 # dictionary input {"frameid":<frame.id>, "file":<full path URI filename>}
 # full path URI for network hosted files later on
 def startFileProcessingPipeline(frameDictionary):
@@ -86,6 +99,8 @@ def startFileProcessingPipeline(frameDictionary):
         print splitFileType
         slugFileType = splitFileType[0].split(' ')[0].lower()
         print slugFileType
+
+        saveFileMetaInfo(fileTypeMagic)
 
         try:
             print "checking " + slugFileType + " against "
