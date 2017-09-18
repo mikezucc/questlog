@@ -1,0 +1,129 @@
+{
+  "mid": "string",
+  "locale": "string",
+  "description": "string",
+  "score": "number",
+  "confidence": "number",
+  "topicality": "number",
+  "boundingPoly": {
+    "thing": "object(BoundingPoly)"
+  },
+  "locations": [
+    {
+      "thing": "object(LocationInfo)"
+    }
+  ],
+  "properties": [
+    {
+      "thing": "object(Property)"
+    }
+  ]
+}
+
+{
+  "boundingPoly": {
+    "properties": [
+      {
+        "thing": "object(Property)"
+      }
+    ]
+  }
+}
+
+
+ultimately we need to flatten to one level
+
+Chaos Set, set of things (lowest level of relationship in any of the omen models)
+a database of every label ever mentioned, resolution lowered by lowercasing
+--term
+{
+  label:<string>
+  knowledge_graph_id:<GOOGLE_ENTITY>
+  parents:[<kiloterm>]
+  frames_chrono:[<FRAME>]
+}
+
+frames_chrono contains chronological list of linked frames in which this label was discovered. nonrel: modified at process time; nosql: cached at query time, hella tables;
+
+now that there is a table containing a list of mapped terms and their pertinent frames what can we do?
+
+--thesaurus
+reduction of this can be done through a generic thesaurus mapping as one set. So one whole set will be devoted to thesaurus mapping.
+
+--GOOGLE_KNOWLEDGE_GRAPH
+another set can be mapped with the hooli knowledge graph
+
+--CHRONO GRAPH
+see what i did there? organization of frames by mapped time features
+  - periodicity (frames of phases of day, week, etc...)
+  - frequency of postings (frequency of signal receives would act as boundaries for time)
+    - take sliding frame time deviation where groups are built by observing a histogram or deviation of separations in time. ** this can actually have multiple tables where the frames can be organized by the quantizations of deviations. i.e. 1s gaps will be the threshold in one cohort, and then 3 hour gaps in another cohort, and then days in the next cohort where particular measurements of time change as function of a sliding window
+
+-- SOURCE GRAPH
+set organized by kind of source, i.e. iPhone, mobile, laptop, manual, automatic
+
+-- LOCATION GRAPH
+set organized by deviation managed locations, in the same way that chronograph is used
+
+** recurring theme here is to have a multiple subsets describing a superset whereby the mapping is based on the deviation groups of a particular metric
+
+
+
+Chaos Team Model
+a database of synonym mapped things based on an english thesaurus relationship model
+i.e. there can be "person" -> ["individual", "human", "friend"] where friend -> ["person", "companion", "amigo", "hermano"]
+--kiloterm
+{
+  label:<string>
+  knowledge_graph_id:<GOOGLE_ENTITY>
+  parents:[<megaterm>]
+}
+
+
+--sample event line
+t     | 0
+t+0.1 | 0.11
+t+0.2 | 0.14
+t+0.9 | 0.70
+t+1.0 | 0.121
+t+1.5 | 0.51
+t+3.0 | 1.52
+t+3.1 | 0.19
+t+3.15| 0.054
+t+3.2 | 0.057
+
+--binning
+$ but they will all be non-matching gaps? interesting, maybe there is something useful from the noncomformity of event gaps
+$ solution?
+$ round to significant digit, ceiling to nearest sane interval (use your fucking gut for this one), this step is not to actually organize the events, but find the appropriate gap profiles to describe event hierarchy
+$ ceiling to divisible by 5
+0t     | 0
+a | t+0.1  | 0.1 | 0
+b | t+0.2  | 0.1 | 0
+c | t+0.9  | 0.7 | 1
+d | t+1.0  | 0.1 | 0
+e | t+1.5  | 0.5 | 1
+f | t+3.0  | 1.5 | 1
+g | t+3.1  | 0.2 | 1
+h | t+3.15 | 0.05| 0
+i | t+3.2  | 0.05| 0
+j | t+65.0 | 61.8| 60
+k | t+69.0 | 4.0 | 5
+l | t+70.1 | 1.1 | 1
+m | t+70.5 | 0.4 | 0
+
+0 < { a,b,d,h,i,m } > 6
+1 < { c,e,f,g,l }   > 5
+5 bin < { k }       > 1
+10 bin < { }        > 0
+...                 > 0
+55 bin < { }        > 0
+60 bin < { j }      > 1
+65 bin < { }        > 0
+
+$ what next? we can look at finding boundaries in the linear set of count< calculated threshold or we can just say that continuous zeroes signify that there is a split
+
+$ need to find out what calculation our brain does intuitively to say that the major grouping is by 60s, and that minor events are grouped by 0s/1s
+class A = 0s
+class B = 1s
+class C = 60s
