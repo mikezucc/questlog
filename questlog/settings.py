@@ -25,7 +25,7 @@ SECRET_KEY = 'druzy#r=_00uwgcqr&gnzrv*nx15o3dkh^dn4#$u-0(#1^db+8'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.163']
+ALLOWED_HOSTS = ['192.168.1.163', 'localhost']
 
 
 # Application definition

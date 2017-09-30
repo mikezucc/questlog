@@ -63,7 +63,7 @@
       console.log("submit event");
       var fd = new FormData(document.getElementById("tokenSubmit"));
       $.ajax({
-        url: "http://192.168.1.163:3001/process/{{username}}/",
+        url: "{{domain}}/process/{{username}}/",
         type: "POST",
         data: fd,
         processData: false,  // tell jQuery not to process the data
@@ -93,7 +93,7 @@
             console.log('xhr upload complete', e, this.responseText);
             // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
         });
-        xhr.open('POST', 'http://192.168.1.163:3001/ingest/{{username}}/', true);
+        xhr.open('POST', '{{domain}}/ingest/{{username}}/', true);
         // xhr.setRequestHeader("X-CSRFToken", '{{csrf_token}}');
         xhr.send(fd);
     });

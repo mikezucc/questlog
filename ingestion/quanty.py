@@ -77,7 +77,7 @@ def saveFileMetaInfo(fileTypeMagic):
     splitFileType = fileTypeMagic.split(',')
     fileMetadataJSON = {}
     firstRead = False
-    for slugMetaSegment in slugFileType:
+    for slugMetaSegment in splitFileType:
         if not firstRead:
             fileMetadataJSON['type'] = slugMetaSegment
             continue

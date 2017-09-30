@@ -127,3 +127,8 @@ $ need to find out what calculation our brain does intuitively to say that the m
 class A = 0s
 class B = 1s
 class C = 60s
+
+so there are two schools of thinking here. do you build the map all at once or in real time? I think the only appropriate way is to have an agnostic real time way of building the map. this way you it can extend into being run all at once.
+
+so lets establish that there are 5 tiers of encompassing scopeJSON
+-- goes back to writing script

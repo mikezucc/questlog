@@ -502,6 +502,8 @@ class AudioSegment(object):
 
         log_conversion(conversion_command)
 
+        print "** SUBPROCESS CALL >> " + '{}'.format(conversion_command)
+
         p = subprocess.Popen(conversion_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p_out, p_err = p.communicate()
 
