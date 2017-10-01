@@ -38,6 +38,7 @@ from . import *
 from viewswebpages import *
 from detectvision import *
 from detectaudio import *
+from viewsmapping import *
 
 imageFileTypes = ["jpeg", "jpg", "png"]
 soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]
@@ -110,6 +111,7 @@ def startFileProcessingPipeline(frameDictionary):
                 print "*** queue VISION process for  " + filepathURI
                 try:
                     processImageFile(frameDictionary)
+                    importFrameToDatabase(frameDictionary, "image")
                 except Exception as e:
                     print traceback.format_exc()
                 print "--------------------------------------------------------------------------"
@@ -122,6 +124,7 @@ def startFileProcessingPipeline(frameDictionary):
                 print "*** queue AUDIO process for " + filepathURI
                 try:
                     processSoundFile(frameDictionary)
+                    importFrameToDatabase(frameDictionary["frameid"], "audio")
                 except Exception as e:
                     print traceback.format_exc()
                 print "--------------------------------------------------------------------------"
