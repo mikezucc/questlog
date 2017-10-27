@@ -41,10 +41,27 @@ class AllPhrases(models.Model):
 
 class WebSet(models.Model):
     web_raw = models.CharField(max_length=200)
+    web_identity = models.CharField(max_length=200)
+    web_url = models.CharField(max_length=200)
     google_entity_id = models.CharField(max_length=50)
     metadata = {}
 
 class AllWeb(models.Model):
-    web_raw = models.CharField(max_length=300)
+    web_raw = models.CharField(max_length=200)
+    web_score = models.CharField(max_length=200)
+    web_identity = models.CharField(max_length=200)
+    web_url = models.CharField(max_length=200)
     web_set_parent = models.ForeignKey(PhraseSet, on_delete=models.CASCADE)
     referencing_frame = models.ForeignKey(Frame, on_delete=models.CASCADE)
+    metadata = {}
+
+class LabelSet(models.Model):
+    label_raw = models.CharField(max_length=200)
+    google_entity_id = models.CharField(max_length=50)
+    metadata = {}
+
+class AllLabels(models.Model):
+    label_raw = models.CharField(max_length=300)
+    label_set_parent = models.ForeignKey(LabelSet, on_delete=models.CASCADE)
+    referencing_frame = models.ForeignKey(Frame, on_delete=models.CASCADE)
+    metadata = {}
