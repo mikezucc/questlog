@@ -91,7 +91,7 @@ def mindPage(request, usernameInput):
             thang = {'metadata':{'type':filebuffer},'filename':fil}
             filesInFrameList.append(thang)
         frame.metadata = {'content':filesInFrameList} # dictionary property
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://localhost:8000', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.163:3001', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
 
 def filesInFrame(frameName):
     fileList = []
