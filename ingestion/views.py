@@ -12,6 +12,7 @@ from django.template import RequestContext
 #from constants import *
 from django.db.models.signals import post_delete
 from django.dispatch.dispatcher import receiver
+from django.views.decorators.csrf import csrf_exempt
 import zipfile
 import StringIO
 from django.forms import widgets
@@ -42,6 +43,7 @@ UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 # Create your views here.
 
 # NO
+@csrf_exempt
 def ingestFiles(request, usernameInput):
     try:
         files = request.FILES
@@ -81,6 +83,48 @@ def ingestFiles(request, usernameInput):
                     print "handle_uploaded_file > 4 || at " + str(counter) + ' out of ' + str(chunkCount) + ' for ' + filenameDirty
                     counter = counter + len(chunk)
                 print "handle_uploaded_file > 5 || finished writing " + filenameDirty
+        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now())
+        return HttpResponse(status=200)
+    print("failed to do shit")
+    return tryWithOneFileRead(request, usernameInput)
+
+def tryWithOneFileRead(request, usernameInput):
+    try:
+        files = request.FILE
+    except:
+        print "portal >> 0 || bitch failed"
+        return HttpResponse(status=400)
+
+    users = Mind.objects.filter(username=usernameInput)
+    if len(users) == 0:
+        #maybe upload to a random fucking folder i dont know??
+        print "well this is a hodge podge you see"
+        return HttpResponse(status=403)
+    mind = users[0]
+
+    checkDirectoryForMind(mind)
+    timestampstring = unicode(datetime.datetime.now())
+    frameFolderName = UPLOAD_DIR_3 + mind.username + "/" + timestampstring + "/"
+    status = createFrameWithFolder(frameFolderName)
+
+    print 'tryWithOneFileRead > 1 || ' + files + ', post '
+    if files != None:
+        print 'tryWithOneFileRead > 2 || queueing ' + files.name
+        o = files
+        print 'tryWithOneFileRead > 2.1 || o as ' + str(len(o))
+        print "tryWithOneFileReadhandle_uploaded_file > 0 || "
+        filenameDirty = o.name.replace(" ", "_") # per Model
+        print "tryWithOneFileReadhandle_uploaded_file > 1 || initiating system write" + filenameDirty
+        with open(frameFolderName + filenameDirty, 'wb+') as destination:
+            print "tryWithOneFileReadhandle_uploaded_file > 2 || opening file " + filenameDirty
+            chunkCount = len(o)
+            counter = 0
+            print "tryWithOneFileReadhandle_uploaded_file > 3 || writing " + str(chunkCount) + " chunks for " + filenameDirty
+            for chunk in o.chunks():
+                destination.write(chunk)
+                print "tryWithOneFileReadhandle_uploaded_file > 4 || at " + str(counter) + ' out of ' + str(chunkCount) + ' for ' + filenameDirty
+                counter = counter + len(chunk)
+            print "tryWithOneFileReadhandle_uploaded_file > 5 || finished writing " + filenameDirty
         frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now())
         return HttpResponse(status=200)
     print("failed to do shit")

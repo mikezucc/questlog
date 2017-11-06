@@ -38,7 +38,7 @@ from . import *
 from viewswebpages import *
 from detectvision import *
 from detectaudio import *
-from viewsmapping import *
+# from viewsmapping import *
 
 imageFileTypes = ["jpeg", "jpg", "png"]
 soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]

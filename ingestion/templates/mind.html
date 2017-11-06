@@ -108,6 +108,16 @@
   <p>
   {% for fil in frame.metadata.content %}
     <a style="padding-left:50px;" id="expand('{{frame.id}}', '{{fil.filename}}')">{{fil.filename}}</a> - <a href="/filter/?type={{fil.metadata.type}}">{{fil.metadata.type}}</a>
+    <p>
+    {% if fil.metadata.simpletype == "image" %}
+      <img src="http://192.168.1.163:3001/downlink/{{frame.id}}/{{fil.filename}}/" style="width: 400px; height:auto;" />
+    {% elif fil.metadata.simpletype == "sound" %}
+      <audio controls>
+        <source src="http://192.168.1.163:3001/downlink/{{frame.id}}/{{fil.filename}}/">
+Your browser does not support the audio tag.
+      </audio>
+    {% endif %}
+    </p>
     <br>
   {% endfor %}
   </p>

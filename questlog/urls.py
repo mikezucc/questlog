@@ -29,7 +29,8 @@ urlpatterns = [
     url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='mindPage'),
     url(r'^auth/', ingestionPages.loginRequest, name='loginRequest'),
     url(r'^login/', ingestionPages.loginPage, name='loginPage'),
-    url(r'^$', ingestionPages.loginPage, name='rootpage')
+    url(r'^downlink/(?P<frameid>\w+)/(?P<filename>.*)/', ingestionPages.downlinkFrameData, name='downlinkFrameData'),
+    url(r'^$', ingestionPages.loginPage, name='rootpage'),#downlinkFrameData
 ]
 
 """
