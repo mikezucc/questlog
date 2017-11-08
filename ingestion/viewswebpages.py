@@ -146,7 +146,7 @@ def mindPageAPI(request, usernameInput):
         for fil in files:
             with open(foldername + fil, 'r') as resFile:
                 filebuffer = magic.from_buffer(resFile.read(1024))
-                thang = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + fil)},'filename':fil,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+fil}
+                thang = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + fil)},'filename':fil,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+fil+"/"}
                 print filebuffer
                 slugFileType = filebuffer.split(' ')[0].lower()
                 print "JSON READ " + slugFileType
