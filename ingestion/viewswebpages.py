@@ -8,6 +8,7 @@ from django import forms
 from models import *
 from django.utils import timezone
 from django.http import HttpResponse
+from django.http import JsonResponse
 from django.template import RequestContext
 #from constants import *
 from django.db.models.signals import post_delete
@@ -31,6 +32,9 @@ from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
 from django.http import FileResponse
 import magic
+from django.views.decorators.csrf import csrf_exempt
+import traceback
+import sys
 
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -41,6 +45,8 @@ INGESTIONPAGETEMPLATE = CURRENTLOCATION + 'ingestionmain.html'
 LOGINTEMPLATE = CURRENTLOCATION + 'login.html'
 MINDPAGETEMPLATE = CURRENTLOCATION + 'mind.html'
 UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
+
+textFileTypes = ["json","txt", "ascii", "text"]
 
 # fucking just take the int dude
 def downlinkFrameData(request, frameid, filename):
@@ -110,6 +116,59 @@ def mindPage(request, usernameInput):
             filesInFrameList.append(thang)
         frame.metadata = {'content':filesInFrameList} # dictionary property
     return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.163:3001', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
+
+# this will be a way to force client alignment. They can access via SLUGS or POST
+@csrf_exempt
+def mindPageAPIPOST(request):
+    try:
+        usernameInput = request.POST['username']
+    except:
+        print "missing username"
+        return HttpResponse(code=403)
+    return mindPageAPI(request, usernameInput)
+
+@csrf_exempt
+def mindPageAPI(request, usernameInput):
+    if usernameInput == None:
+        return HttpResponse(code=403)
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+    possibleFrames = Frame.objects.filter(owner=possibleMind)
+    if possibleFrames == None:
+        return JsonResponse(json.dumps([])) # ;mao Im a god
+    # is there a way to make this recursive? so its higher than 2
+    framesMetadataList = []
+    for frame in possibleFrames:
+        foldername = frame.foldername
+        files = filesInFrame(foldername)
+        filesInFrameList = []
+        for fil in files:
+            with open(foldername + fil, 'r') as resFile:
+                filebuffer = magic.from_buffer(resFile.read(1024))
+                thang = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + fil)},'filename':fil}
+                print filebuffer
+                slugFileType = filebuffer.split(' ')[0].lower()
+                print "JSON READ " + slugFileType
+                fileOutput = ""
+                try:
+                    # FOR THE RECORD FUCK YOU IF YOU EVER USE ASSERTION FOR PRODUCTION OR EVER AT ALL HONESTLY
+                    if textFileTypes.index(slugFileType) != None:
+                        print "** JSON READ DETERMINED FILE TYPE"
+                        resFile.seek(0)
+                        fileOutput = resFile.read()
+                        print "JSON READ ASCII FILE LENGTH" + fileOutput
+                        thang['text'] = json.loads(fileOutput)
+                except:
+                    # print traceback.print_exc() # this will not be reliable among more than 3 people honestly
+                    print "**** " + fileOutput + " ****"
+                    print "JSON READ well couldnt fucking do that now could I and now I threw an error for that shit bullshit"
+                resFile.close()
+                filesInFrameList.append(thang)
+        framesMetadataList.append({"frameid":frame.id,"files":filesInFrameList,"foldername":foldername}) # dictionary property
+    return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
+
+
 
 imageFileTypes = ["jpeg", "jpg", "png"]
 soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]
