@@ -49,6 +49,7 @@ UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 textFileTypes = ["json","txt", "ascii", "text"]
 
 # fucking just take the int dude
+@csrf_exempt
 def downlinkFrameData(request, frameid, filename):
     if frameid == None:
         return HttpResponse(status=400)
