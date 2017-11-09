@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='mindPage'),
     url(r'^api/mind-post/', ingestionPages.mindPageAPIPOST, name='mindPageAPIPOST'),
     url(r'^api/mind/(?P<usernameInput>\w+)/', ingestionPages.mindPageAPI, name='mindPageAPI'),
+        url(r'^api/mind-longform/(?P<usernameInput>\w+)/', ingestionPages.mindPageAPILongFormSET, name='mindPageAPILongFormSET'),
     url(r'^auth/', ingestionPages.loginRequest, name='loginRequest'),
     url(r'^login/', ingestionPages.loginPage, name='loginPage'),
     url(r'^downlink/(?P<frameid>\w+)/(?P<filename>.*)/', ingestionPages.downlinkFrameData, name='downlinkFrameData'),

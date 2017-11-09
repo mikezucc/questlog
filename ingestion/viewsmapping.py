@@ -47,12 +47,23 @@ from viewswebpages import *
 from google.cloud import *
 from pydub import AudioSegment
 
+# Let the runtime-relationship define the models
+# So in this case, TermSet is a key, that acts as the master reference
+# for whats inside the AllTerms table.
 def storeTerm(term_raw, referencing_frame, google_entity_id):
     termParent = TermSet.objects.filter(term_raw=term_raw)
     if termParent == None:
         termParent = TermSet.objects.create(term_raw=term_raw,google_entity_id=google_entity_id)
     noisyTerm = AllTerms.objects.create(term_raw=term_raw,term_set_parent=termParent,referencing_frame=referencing_frame)
 
+def storeLongForm(transcript, referencing_frame):
+    #this is the defined max count for long form as its current storage format
+    if len(transcript) > 500:
+        transcript = transcript[:500]
+    longFormEntry = LongFormSet.objects.create(long_form_string=transcript, referencing_frame=referencing_frame)
+
+# this will be the generic bucket store for the snowboy phrases if I manage to get that fucking
+# shit working
 def storePhrase(phrase_raw, referencing_frame, google_entity_id):
     phraseParent = PhraseSet.objects.filter(phrase_raw=phrase_raw)
     if phraseParent == None:
@@ -115,18 +126,20 @@ class AllTerms(models.Model):
 """
 def importAudioMetaToDatabase(frameDictionary):
     filePath = frameDictionary["file"]
-    filePathTranscript = filePath + "-transcript.json"
+    parentFolder = frameDictionary["foldername"]
+    filePathTranscript = parentFolder + filePath + "-transcript.json"
     referencing_frame = Frame.objects.get(id=frameDictionary['frameid'])
     with open(filePathTranscript, 'r') as cuckforce5:
         rawDat = cuckforce5.read()
         #[[{"confidence": "0.905990123749", "transcript": "standing on the running board ripping his Springfield"}]]
         transcriptJSON = json.loads(rawDat)
-        if transcriptJSON.length > 0:
+        if len(transcriptJSON) > 0:
             firstTranscription = transcriptJSON[0]
-            if firstTranscription.length > 0:
+            if len(firstTranscription) > 0:
                 firstResult = firstTranscription[0]
                 confidence = firstResult["confidence"]
                 transcript = firstResult["transcript"]
+                storeLongForm(transcript, referencing_frame)
                 nBroke = transcript.split(' ')
                 for termSlug in nBroke:
                     # test is exist
@@ -193,13 +206,16 @@ def importLabelToDatabase(frameDictionary):
         textJSON = json.loads(rawDat)
 
 def importLandmarksToDatabase(frameDictionary):
+    print "IMPORTLANDMARKS NOT IMPLEMENTED"
 
 def importLogoToDatabase(frameDictionary):
+    print "IMPORTLOGO NOT IMPLEMENTED"
 
 def importDocumentToDatabase(frameDictionary):
+    print "IMPORTDOCUMENT NOT IMPLEMENTED"
 
 def importWebToDatabase(frameDictionary):
-
+    print "IMPORT WEB NOT IMPLEMENTED"
 
 
 def linearDiffOrganize(usernameInput):

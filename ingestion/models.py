@@ -15,9 +15,11 @@ class Mind(models.Model):
 class Frame(models.Model):
     owner = models.ForeignKey(Mind, on_delete=models.CASCADE)
     foldername = models.CharField(max_length=50)
+    main_file = models.CharField(max_length=300, default="")
     createdat = models.DateTimeField(auto_now_add=True)
     metadata = {}
 
+# these appear to be used with the audio transcription
 class TermSet(models.Model):
     term_raw = models.CharField(max_length=100)
     google_entity_id = models.CharField(max_length=50)
@@ -28,6 +30,10 @@ class AllTerms(models.Model):
     term_set_parent = models.ForeignKey(TermSet, on_delete=models.CASCADE)
     referencing_frame = models.ForeignKey(Frame, on_delete=models.CASCADE)
     metadata = {}
+
+class LongFormSet(models.Model):
+    long_form_string = models.CharField(max_length=500)
+    referencing_frame = models.ForeignKey(Frame, on_delete=models.CASCADE)
 
 class PhraseSet(models.Model):
     phrase_raw = models.CharField(max_length=200)

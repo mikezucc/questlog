@@ -38,7 +38,7 @@ from . import *
 from viewswebpages import *
 from detectvision import *
 from detectaudio import *
-# from viewsmapping import *
+from viewsmapping import *
 
 imageFileTypes = ["jpeg", "jpg", "png"]
 soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]
@@ -71,7 +71,36 @@ def processMind(request, usernameInput):
             # except:
             #     # maybe this can be done by the file level
             #     print "never processed this directory"
-            startFileProcessingPipeline({"frameid":frame.id,"filepathURI":(foldername+fil)})
+            frameDictionary = {"frameid":frame.id,"filepathURI":(foldername+fil),"file":fil,"foldername":foldername}
+            startFileProcessingPipeline(frameDictionary)
+    return HttpResponse(status=200)
+
+def processFrame(frameId):
+    possibleFrames = Frame.objects.filter(id=frameId)
+    if possibleFrames == None:
+        return
+    # is there a way to make this recursive? so its higher than 2
+    for frame in possibleFrames:
+        print "frame " + str(frame.id)
+        foldername = frame.foldername
+        files = filesInFrame(foldername)
+        filesInFrameList = []
+        print files
+        if len(files) > 1:
+            print "\t**\n\tFrame Already processing\n\t**"
+            continue
+        for fil in files:
+            # try:
+            #     if fil.index("-processStatus.txt"):
+            #         continue
+            #     print fil + "-processStatus.txt"
+            #     files.index(fil + "-processStatus.txt")
+            #     continue
+            # except:
+            #     # maybe this can be done by the file level
+            #     print "never processed this directory"
+            frameDictionary = {"frameid":frame.id,"filepathURI":(foldername+fil),"file":fil,"foldername":foldername}
+            startFileProcessingPipeline(frameDictionary)
     return HttpResponse(status=200)
 
 def saveFileMetaInfo(fileTypeMagic):
@@ -124,7 +153,7 @@ def startFileProcessingPipeline(frameDictionary):
                 print "*** queue AUDIO process for " + filepathURI
                 try:
                     processSoundFile(frameDictionary)
-                    importFrameToDatabase(frameDictionary["frameid"], "audio")
+                    importFrameToDatabase(frameDictionary, "audio")
                 except Exception as e:
                     print traceback.format_exc()
                 print "--------------------------------------------------------------------------"

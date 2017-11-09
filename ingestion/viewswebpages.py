@@ -103,7 +103,7 @@ def mindPage(request, usernameInput):
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:
         return redirect('/login/')
-    possibleFrames = Frame.objects.filter(owner=possibleMind)
+    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by("-createdat")
     if possibleFrames == None:
         return render(request, MINDPAGETEMPLATE, {'statuscode': 'genesis'})
     # is there a way to make this recursive? so its higher than 2
@@ -135,7 +135,7 @@ def mindPageAPI(request, usernameInput):
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:
         return HttpResponse(code=401) # differing codes reveal to blackbox testing
-    possibleFrames = Frame.objects.filter(owner=possibleMind)
+    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by("-createdat")
     if possibleFrames == None:
         return JsonResponse(json.dumps([])) # ;mao Im a god
     # is there a way to make this recursive? so its higher than 2
@@ -170,6 +170,67 @@ def mindPageAPI(request, usernameInput):
     return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
 
 
+@csrf_exempt
+def mindPageAPILongFormSET(request, usernameInput):
+    if usernameInput == None:
+        return HttpResponse(code=403)
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by('-createdat')
+    if possibleFrames == None:
+        print usernameInput + " HAS NO FRAMES"
+        return JsonResponse(json.dumps([])) # ;mao Im a god
+    # is there a way to make this recursive? so its higher than 2
+    # looking for frames
+    frameMetadata = {}
+    framesMetadataList = []
+    for frame in possibleFrames:
+        longFormSetQueryResults = LongFormSet.objects.filter(referencing_frame=frame)
+        longFormSet = None
+        if len(longFormSetQueryResults) > 0:
+            longFormSet = longFormSetQueryResults[0]
+        foldername = frame.foldername
+        # determing main file shit
+        main_file = frame.main_file
+        main_file_metadata = {}
+        print "main file " + main_file
+        if main_file != "" and main_file != "NO_FILE": #fucking hell lol
+            with open(foldername + main_file, 'r') as resFile:
+                filebuffer = magic.from_buffer(resFile.read(1024))
+                main_file_metadata = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + main_file)},'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
+                resFile.close()
+        else:
+            continue
+        # determining all dir file information, should probably mimic the file model
+        foldername = frame.foldername
+        files = filesInFrame(foldername)
+        filesInFrameList = []
+        for fil in files:
+            with open(foldername + fil, 'r') as resFile:
+                filebuffer = magic.from_buffer(resFile.read(1024))
+                thang = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + fil)},'filename':fil,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+fil+"/"}
+                print filebuffer
+                slugFileType = filebuffer.split(' ')[0].lower()
+                print "JSON READ " + slugFileType
+                fileOutput = ""
+                try:
+                    # FOR THE RECORD FUCK YOU IF YOU EVER USE ASSERTION FOR PRODUCTION OR EVER AT ALL HONESTLY
+                    if textFileTypes.index(slugFileType) != None:
+                        print "** JSON READ DETERMINED FILE TYPE"
+                        resFile.seek(0)
+                        fileOutput = resFile.read()
+                        print "JSON READ ASCII FILE LENGTH" + fileOutput
+                        thang['text'] = json.loads(fileOutput)
+                except:
+                    # print traceback.print_exc() # this will not be reliable among more than 3 people honestly
+                    print "**** " + fileOutput + " ****"
+                    print "JSON READ well couldnt fucking do that now could I and now I threw an error for that shit bullshit"
+                resFile.close()
+                filesInFrameList.append(thang)
+        frameMetadata = {"frameid":frame.id,"files":filesInFrameList,"foldername":foldername,"main_file":main_file, "main_file_metadata":main_file_metadata} # dictionary property
+        framesMetadataList.append({"frameid":frame.id,"metadata":frameMetadata,"foldername":foldername}) # dictionary property
+    return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
 
 imageFileTypes = ["jpeg", "jpg", "png"]
 soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]

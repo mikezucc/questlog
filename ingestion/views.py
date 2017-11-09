@@ -32,8 +32,12 @@ from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
 import datetime
 
+from multiprocessing import Pool
+pool = Pool(processes=1)
+
 # import the web page views
 from . import *
+from quanty import *
 
 # These might be for OS X (?) <- ?
 # UPLOAD_DIR_2 = os.getcwd().replace("\\","/")  + "/daily/uploads/"
@@ -41,6 +45,9 @@ from . import *
 UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 
 # Create your views here.
+
+def processedSingleFrame():
+    print "Finsished processing Single Frame"
 
 # NO
 @csrf_exempt
@@ -66,12 +73,14 @@ def ingestFiles(request, usernameInput):
     print 'uploadDataRequest > 1 || ' + str(len(files)) + ', post '
     if files != None and len(files) > 0:
         print 'uploadDataRequest > 1 || managing ' + str(len(files)) + ' of files'
+        filnem = ""
         for f in files:
             print 'uploadDataRequest > 2 || queueing ' + files[f].name
             o = files[f]
             print 'uploadDataRequest > 2.1 || o as ' + str(len(o))
             print "handle_uploaded_file > 0 || "
             filenameDirty = o.name.replace(" ", "_") # per Model
+            filnem = filenameDirty
             print "handle_uploaded_file > 1 || initiating system write" + filenameDirty
             with open(frameFolderName + filenameDirty, 'wb+') as destination:
                 print "handle_uploaded_file > 2 || opening file " + filenameDirty
@@ -83,7 +92,8 @@ def ingestFiles(request, usernameInput):
                     print "handle_uploaded_file > 4 || at " + str(counter) + ' out of ' + str(chunkCount) + ' for ' + filenameDirty
                     counter = counter + len(chunk)
                 print "handle_uploaded_file > 5 || finished writing " + filenameDirty
-        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now())
+        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now(), main_file=filnem)
+        result = pool.apply_async(processFrame, [frameO.id]) # Evaluate "f(10)" asynchronously calling callback when finished
         return HttpResponse(status=200)
     print("failed to do shit")
     return tryWithOneFileRead(request, usernameInput)
