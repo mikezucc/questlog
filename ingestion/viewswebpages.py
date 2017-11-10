@@ -63,7 +63,11 @@ def downlinkFrameData(request, frameid, filename):
         filesInFrameList = []
         for fil in files:
             if fil == filename:
-                return FileResponse(open(foldername + fil, 'rb'))
+                approx_file_type = determineSimpleType(foldername+fil)
+                if approx_file_type == "image":
+
+                content_type="application/liquid; charset=utf-8"
+                return FileResponse(open(foldername + fil, 'rb'),content_type="application/liquid; charset=utf-8")
     return HttpResponse(status=500)
 
 def loginPage(request):
@@ -258,6 +262,35 @@ def determineSimpleType(filepathURI):
             if soundFileTypes.index(slugFileType):
                 print "ISSA SOUND BITCH HA HA"
                 return "sound"
+        except:
+            print "not an soundfile"
+
+        openFile.close()
+    return "generic"
+
+def determineSimpleFormat(filepathURI):
+    # should find a safer solution to reading, buffer may be overflow
+    with open(filepathURI, 'r') as openFile:
+        fileTypeMagic = magic.from_buffer(openFile.read(1024))
+
+        splitFileType = fileTypeMagic.split(',')
+        print splitFileType
+        slugFileType = splitFileType[0].split(' ')[0].lower()
+        print slugFileType
+
+        try:
+            print "checking " + slugFileType + " against "
+            print imageFileTypes
+            if imageFileTypes.index(slugFileType) != None:
+                print "ISSA IMAGE BITCH HA HA"
+                return slugFileType
+        except:
+            print "not an image"
+
+        try:
+            if soundFileTypes.index(slugFileType):
+                print "ISSA SOUND BITCH HA HA"
+                return slugFileType
         except:
             print "not an soundfile"
 
