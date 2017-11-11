@@ -64,10 +64,12 @@ def downlinkFrameData(request, frameid, filename):
         for fil in files:
             if fil == filename:
                 approx_file_type = determineSimpleType(foldername+fil)
+                content_type = ""
                 if approx_file_type == "image":
-
-                content_type="application/liquid; charset=utf-8"
-                return FileResponse(open(foldername + fil, 'rb'),content_type="application/liquid; charset=utf-8")
+                    content_type="image/" + determineSimpleFormat(foldername+fil) + ";"
+                elif approx_file_type == "sound":
+                    content_type="audio/" + determineSimpleFormat(foldername+fil) + ";"
+                return FileResponse(open(foldername + fil, 'rb'),content_type=content_type)
     return HttpResponse(status=500)
 
 def loginPage(request):
