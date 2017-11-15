@@ -27,5 +27,6 @@ sudo pip install --upgrade google-api-python-client
 sudo pip install --upgrade google-cloud
 sudo pip install --upgrade google-cloud-vision
 
-934 pip install Pillow
+934 sudo pip install Pillow
 ls
+sudo pip install boto3
