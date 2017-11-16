@@ -71,7 +71,7 @@ def processMind(request, usernameInput):
             # except:
             #     # maybe this can be done by the file level
             #     print "never processed this directory"
-            frameDictionary = {"frameid":frame.id,"filepathURI":(foldername+fil),"file":fil,"foldername":foldername}
+            frameDictionary = {"frame_id":frame.id,"filepathURI":(foldername+fil),"file":fil,"foldername":foldername, "user_id":possibleMind.id}
             startFileProcessingPipeline(frameDictionary)
     return HttpResponse(status=200)
 
@@ -119,7 +119,8 @@ def saveFileMetaInfo(fileTypeMagic):
 # dictionary input {"frameid":<frame.id>, "file":<full path URI filename>}
 # full path URI for network hosted files later on
 def startFileProcessingPipeline(frameDictionary):
-    frameid = frameDictionary['frameid']
+    frame_id = frameDictionary['frame_id']
+    user_id = frameDictionary['user_id']
     filepathURI = frameDictionary['filepathURI']
     # should find a safer solution to reading, buffer may be overflow
     with open(filepathURI, 'r') as openFile:
@@ -139,8 +140,8 @@ def startFileProcessingPipeline(frameDictionary):
                 print "--------------------------------------------------------------------------"
                 print "*** queue VISION process for  " + filepathURI
                 try:
-                    processImageFile(frameDictionary)
-                    importFrameToDatabase(frameDictionary, "image")
+                    processImageFile(frameDictionary, frame_id, user_id)
+                    #importFrameToDatabase(frameDictionary, "image")
                 except Exception as e:
                     print traceback.format_exc()
                 print "--------------------------------------------------------------------------"
@@ -152,8 +153,8 @@ def startFileProcessingPipeline(frameDictionary):
                 print "--------------------------------------------------------------------------"
                 print "*** queue AUDIO process for " + filepathURI
                 try:
-                    processSoundFile(frameDictionary)
-                    importFrameToDatabase(frameDictionary, "audio")
+                    processSoundFile(frameDictionary, frame_id, user_id)
+                    # importFrameToDatabase(frameDictionary, "audio")
                 except Exception as e:
                     print traceback.format_exc()
                 print "--------------------------------------------------------------------------"
@@ -166,17 +167,17 @@ def startFileProcessingPipeline(frameDictionary):
         #     statusFile.write("finished")
         #     statusFile.close()
 
-def processImageFile(frameDictionary):
+def processImageFile(frameDictionary, frame_id, user_id):
     print "processing image" + json.dumps(frameDictionary)
-    frameid = frameDictionary['frameid']
+    frame_id = frameDictionary['frame_id']
     filepathURI = frameDictionary['filepathURI']
     # try faces, returns a list result of Face objects? not sure
     # if object or serialized thanks google for that shit
-    runGoogleVisionSuite(filepathURI)
+    runGoogleVisionSuite(filepathURI, frame_id, user_id)
 
-def processSoundFile(frameDictionary):
-    frameid = frameDictionary['frameid']
+def processSoundFile(frameDictionary, frame_id, user_id):
+    frame_id = frameDictionary['frame_id']
     filepathURI = frameDictionary['filepathURI']
     # try faces, returns a list result of Face objects? not sure
     # if object or serialized thanks google for that shit
-    runGoogleSpeechSuite(filepathURI)
+    runGoogleSpeechSuite(filepathURI, frame_id, user_id)

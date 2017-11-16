@@ -40,8 +40,15 @@ from viewswebpages import *
 from google.cloud import *
 from pydub import AudioSegment
 
-def runGoogleSpeechSuite(frameDictionary):
-    transcribe_file(frameDictionary)
+# Transcribe the given audio file asynchronously.
+from google.cloud import speech
+from google.cloud.speech import enums
+from google.cloud.speech import types
+
+from jsondbimport import *
+
+def runGoogleSpeechSuite(frameDictionary, frame_id, user_id):
+    transcribe_file(frameDictionary, frame_id, user_id)
 
 #
 # contains the path to the converted file
@@ -54,12 +61,8 @@ def convertToL16(path):
     return convertFilePath
 
 # [START def_transcribe_file]
-def transcribe_file(filepathURI):
+def transcribe_file(filepathURI, frame_id, user_id):
     speech_file = filepathURI
-    """Transcribe the given audio file asynchronously."""
-    from google.cloud import speech
-    from google.cloud.speech import enums
-    from google.cloud.speech import types
     client = speech.SpeechClient()
 
     # [START migration_async_request]
@@ -89,6 +92,8 @@ def transcribe_file(filepathURI):
             print('Transcript: {}'.format(alternative.transcript))
             print('Confidence: {}'.format(alternative.confidence))
         resultsJSONList.append(phrasonJSON)
+
+    spitJSONAPIResulttoMDB({"audio":resultsJSONList}, "audio_speech_google", frame_id, user_id)
 
     jsonRes = json.dumps(resultsJSONList)
     with open(filepathURI+"-transcript.json", 'wb+') as jsonAPIResultsFile:

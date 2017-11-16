@@ -143,7 +143,7 @@ def detect_faces_uri(uri):
 
 
 # [START def_detect_labels]
-def detect_labels(path):
+def detect_labels(path, frame_id, user_id):
     print "Detects labels in the file." + path
     client = vision.ImageAnnotatorClient()
 
@@ -168,6 +168,8 @@ def detect_labels(path):
 
         labelsList.append(labelModel)
     labelJSON = {"labels":labelsList}
+
+    spitJSONAPIResulttoMDB(labelJSON, "labels_ocr_google", frame_id, user_id)
 
     jsonRes = json.dumps(labelJSON)
     with open(path+"-labels.json", 'wb+') as jsonAPIResultsFile:
@@ -379,7 +381,7 @@ def detect_safe_search_uri(uri):
 
 
 # [START def_detect_text]
-def detect_text(path):
+def detect_text(path, frame_id, user_id):
     print "Detects text in the file." + path
     client = vision.ImageAnnotatorClient()
 
@@ -404,6 +406,9 @@ def detect_text(path):
         # print('bounds: {}'.format(','.join(vertices)))
 
     textsJSON = {"texts":textsList}
+
+    spitJSONAPIResulttoMDB(textsJSON, "text_ocr_google", frame_id, user_id)
+
     jsonRes = json.dumps(textsJSON)
     with open(path+"-text.json", 'wb+') as jsonAPIResultsFile:
         # print jsonRes
@@ -523,7 +528,7 @@ def detect_properties_uri(uri):
 
 
 # [START def_detect_web]
-def detect_web(path):
+def detect_web(path, frame_id, user_id):
     print "Detects web annotations given an image." + path
     client = vision.ImageAnnotatorClient()
 
@@ -564,6 +569,9 @@ def detect_web(path):
             print('Description: {}'.format(entity.description))
 
     jsonRes = MessageToJson(response)
+
+    spitJSONAPIResulttoMDB({"web":jsonRes}, "web_ocr_google", frame_id, user_id)
+
     with open(path+"-web.json", 'wb+') as jsonAPIResultsFile:
         print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -791,7 +799,7 @@ def render_doc_text(document, filein, fileout):
     # [END render_doc_text]
 
 # [START def_detect_document]
-def detect_document(path):
+def detect_document(path, frame_id, user_id):
     print "Detects document features in an image." + path
     client = vision.ImageAnnotatorClient()
 
@@ -824,6 +832,7 @@ def detect_document(path):
             # print('Block Bounds:\n {}'.format(block.bounding_box))
 
     jsonRes = MessageToJson(response)
+    spitJSONAPIResulttoMDB({"document":jsonRes}, "document_ocr_google", frame_id, user_id)
     with open(path+"-document.json", 'wb+') as jsonAPIResultsFile:
         # print jsonRes
         jsonAPIResultsFile.write(jsonRes)
@@ -869,13 +878,13 @@ def detect_document_uri(uri):
     return 400
 # [END def_detect_document_uri]
 
-def runGoogleVisionSuite(path):
+def runGoogleVisionSuite(path, frame_id, user_id):
     try:
         detect_faces(path)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_labels(path)
+        detect_labels(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
@@ -887,7 +896,7 @@ def runGoogleVisionSuite(path):
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_text(path)
+        detect_text(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
@@ -895,7 +904,7 @@ def runGoogleVisionSuite(path):
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_web(path)
+        detect_web(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
@@ -903,6 +912,6 @@ def runGoogleVisionSuite(path):
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_document(path)
+        detect_document(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
