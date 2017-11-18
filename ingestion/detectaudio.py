@@ -93,15 +93,9 @@ def transcribe_file(filepathURI, frame_id, user_id):
             print('Confidence: {}'.format(alternative.confidence))
         resultsJSONList.append(phrasonJSON)
 
-    spitJSONAPIResulttoMDB({"audio":resultsJSONList}, "audio_speech_google", frame_id, user_id)
+    audioJSON = {"audio":resultsJSONList}
+    spitJSONAPIResulttoMDB(audioJSON, "audio_speech_google", frame_id, user_id)
 
-    jsonRes = json.dumps(resultsJSONList)
-    with open(filepathURI+"-transcript.json", 'wb+') as jsonAPIResultsFile:
-        print jsonRes
-        jsonAPIResultsFile.write(jsonRes)
-        jsonAPIResultsFile.close()
-        return
-    return
     # [END migration_async_response]
 # [END def_transcribe_file]
 

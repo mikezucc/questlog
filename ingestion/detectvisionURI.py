@@ -39,42 +39,6 @@ from google.cloud import vision
 from google.cloud.vision import types
 from PIL import Image, ImageDraw
 
-# [START def_detect_faces]
-def detect_faces(path):
-    print "Detects faces in an image." + path
-    client = vision.ImageAnnotatorClient()
-
-    # [START migration_face_detection]
-    # [START migration_image_file]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
-    # [END migration_image_file]
-
-    response = client.face_detection(image=image)
-    faces = response.face_annotations
-
-    # Names of likelihood from google.cloud.vision.enums
-    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
-                       'LIKELY', 'VERY_LIKELY')
-    print('Faces:')
-
-    for face in faces:
-        print('anger: {}'.format(likelihood_name[face.anger_likelihood]))
-        print('joy: {}'.format(likelihood_name[face.joy_likelihood]))
-        print('surprise: {}'.format(likelihood_name[face.surprise_likelihood]))
-
-        vertices = (['({},{})'.format(vertex.x, vertex.y)
-                    for vertex in face.bounding_poly.vertices])
-
-        print('face bounds: {}'.format(','.join(vertices)))
-    highlight_faces(path, faces, path[:-4] + '-detectfaces' + path[-4:])
-
-    return 200
-    # [END migration_face_detection]
-# [END def_detect_faces]
-
 def highlight_faces(image, faces, output_filename):
     """Draws a polygon around the faces, then saves to output_filename.
 
@@ -95,16 +59,51 @@ def highlight_faces(image, faces, output_filename):
 
     im.save(output_filename)
 
-# [START def_detect_labels]
-def detect_labels(path, frame_id, user_id):
-    print "Detects labels in the file." + path
+
+# [START def_detect_faces_uri]
+def detect_faces_uri(uri):
+    print "Detects faces in the file located in Google Cloud Storage or the web." + uri
     client = vision.ImageAnnotatorClient()
+    # [START migration_image_uri]
+    image = types.Image()
+    image.source.image_uri = uri
+    # [END migration_image_uri]
 
-    # [START migration_label_detection]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
+    response = client.face_detection(image=image)
+    faces = response.face_annotations
 
-    image = types.Image(content=content)
+    # Names of likelihood from google.cloud.vision.enums
+    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY')
+    print('Faces:')
+
+    for face in faces:
+        print('anger: {}'.format(likelihood_name[face.anger_likelihood]))
+        print('joy: {}'.format(likelihood_name[face.joy_likelihood]))
+        print('surprise: {}'.format(likelihood_name[face.surprise_likelihood]))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in face.bounding_poly.vertices])
+
+        print('face bounds: {}'.format(','.join(vertices)))
+    highlight_faces(path, faces, path[:-4] + '-detectfaces' + path[-4:])
+
+    # jsonRes = MessageToJson(faces)
+    # with open(path+"-faces.json", 'wb+') as jsonAPIResultsFile:
+    #     print jsonRes
+    #     jsonAPIResultsFile.write(jsonRes)
+    #     jsonAPIResultsFile.close()
+    #     return 200
+    #  return 400
+    return 200
+# [END def_detect_faces_uri]
+
+# [START def_detect_labels_uri]
+def detect_labels_uri(uri):
+    print "Detects labels in the file located in Google Cloud Storage or on the Web." + uri
+    client = vision.ImageAnnotatorClient()
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.label_detection(image=image)
     labels = response.label_annotations
@@ -112,32 +111,24 @@ def detect_labels(path, frame_id, user_id):
 
     labelsList = []
     for label in labels:
-        labelModel = {"description": label.description,
-            "mid":label.mid,
-            "locale":label.locale,
-            "score":label.score,
-            "confidence":label.confidence,
-            "topicality":label.topicality}
-
-        labelsList.append(labelModel)
+        labelsList.append(label.description)
     labelJSON = {"labels":labelsList}
 
-    spitJSONAPIResulttoMDB(labelJSON, "labels_ocr_google", frame_id, user_id)
+    # jsonRes = json.dumps(labelJSON)
+    # with open(path+"-labels.json", 'wb+') as jsonAPIResultsFile:
+    #     print jsonRes
+    #     jsonAPIResultsFile.write(jsonRes)
+    #     jsonAPIResultsFile.close()
+    #     return 200
+    # return 400
+# [END def_detect_labels_uri]
 
-
-    # [END migration_label_detection]
-# [END def_detect_labels]
-
-# [START def_detect_landmarks]
-def detect_landmarks(path):
-    print "Detects landmarks in the file." + path
+# [START def_detect_landmarks_uri]
+def detect_landmarks_uri(uri):
+    print "Detects landmarks in the file located in Google Cloud Storage or on the Web." + uri
     client = vision.ImageAnnotatorClient()
-
-    # [START migration_landmark_detection]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.landmark_detection(image=image)
     landmarks = response.landmark_annotations
@@ -145,29 +136,25 @@ def detect_landmarks(path):
 
     landmarksList = []
     for landmark in landmarks:
-        print(landmark.description)
         landmarksList.append(landmark.description)
-        for location in landmark.locations:
-            lat_lng = location.lat_lng
-            print('Latitude'.format(lat_lng.latitude))
-            print('Longitude'.format(lat_lng.longitude))
+        print(landmark.description)
+
     landmarksJSON = {"landmarks":landmarksList}
+    jsonRes = json.dumps(landmarksJSON)
+    with open(path+"-landmarks.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return 200
+    return 400
+# [END def_detect_landmarks_uri]
 
-    # spitJSONAPIResulttoMDB(JSON, "landmarks_ocr_google", frame_id, user_id)
-
-    # [END migration_landmark_detection]
-# [END def_detect_landmarks]
-
-# [START def_detect_logos]
-def detect_logos(path):
-    print "Detects logos in the file." + path
+# [START def_detect_logos_uri]
+def detect_logos_uri(uri):
+    print "Detects logos in the file located in Google Cloud Storage or on the Web." + uri
     client = vision.ImageAnnotatorClient()
-
-    # [START migration_logo_detection]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.logo_detection(image=image)
     logos = response.logo_annotations
@@ -179,23 +166,21 @@ def detect_logos(path):
         print(logo.description)
 
     logosJSON = {"logos":logosList}
+    jsonRes = json.dumps(logosJSON)
+    with open(path+"-logos.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return 200
+    return 400
+# [END def_detect_logos_uri]
 
-    spitJSONAPIResulttoMDB(logosJSON, "logos_ocr_google", frame_id, user_id)
-
-    # [END migration_logo_detection]
-# [END def_detect_logos]
-
-
-# [START def_detect_safe_search]
-def detect_safe_search(path):
-    print "Detects unsafe features in the file." + path
+# [START def_detect_safe_search_uri]
+def detect_safe_search_uri(uri):
+    print "Detects unsafe features in the file located in Google Cloud Storage or on the Web." + uri
     client = vision.ImageAnnotatorClient()
-
-    # [START migration_safe_search_detection]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.safe_search_detection(image=image)
     safe = response.safe_search_annotation
@@ -209,25 +194,14 @@ def detect_safe_search(path):
     print('medical: {}'.format(likelihood_name[safe.medical]))
     print('spoofed: {}'.format(likelihood_name[safe.spoof]))
     print('violence: {}'.format(likelihood_name[safe.violence]))
+# [END def_detect_safe_search_uri]
 
-    print "SAFE SEARCH API DISABLED"
-
-    # spitJSONAPIResulttoMDB(logosJSON, "safesearch_ocr_google", frame_id, user_id)
-
-    # [END migration_safe_search_detection]
-# [END def_detect_safe_search]
-
-
-# [START def_detect_text]
-def detect_text(path, frame_id, user_id):
-    print "Detects text in the file." + path
+# [START def_detect_text_uri]
+def detect_text_uri(uri):
+    print "Detects text in the file located in Google Cloud Storage or on the Web." + uri
     client = vision.ImageAnnotatorClient()
-
-    # [START migration_text_detection]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.text_detection(image=image)
     texts = response.text_annotations
@@ -236,30 +210,29 @@ def detect_text(path, frame_id, user_id):
     textsList = []
     for text in texts:
         textsList.append(text.description)
-        # print('\n"{}"'.format(text.description))
+        print('\n"{}"'.format(text.description))
 
         vertices = (['({},{})'.format(vertex.x, vertex.y)
                     for vertex in text.bounding_poly.vertices])
 
-        # print('bounds: {}'.format(','.join(vertices)))
+        print('bounds: {}'.format(','.join(vertices)))
 
     textsJSON = {"texts":textsList}
+    jsonRes = json.dumps(textsJSON)
+    with open(path+"-text.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return 200
+    return 400
+# [END def_detect_text_uri]
 
-    spitJSONAPIResulttoMDB(textsJSON, "text_ocr_google", frame_id, user_id)
-
-    # [END migration_text_detection]
-# [END def_detect_text]
-
-# [START def_detect_properties]
-def detect_properties(path):
-    print "Detects image properties in the file." + path
+# [START def_detect_properties_uri]
+def detect_properties_uri(uri):
+    print "Detects image properties in the file located in Google Cloud Storage or on the Web." + uri
     client = vision.ImageAnnotatorClient()
-
-    # [START migration_image_properties]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.image_properties(image=image)
     props = response.image_properties_annotation
@@ -267,39 +240,28 @@ def detect_properties(path):
 
     colorsList = []
     for color in props.dominant_colors.colors:
-        jsonFriendly = {"fraction":color.pixel_fraction,
-        "red": (color.color.red if color.color.red != None else 0.0),
-        "green":(color.color.green if color.color.green != None else 0.0),
-        "alpha":(color.color.alpha if color.color.alpha != None else 0.0),
-        "blue":(color.color.blue if color.color.blue != None else 0.0)}
-        if jsonFriendly['alpha'] == None:
-            jsonFriendly['alpha'] = 1.0
-        elif len(str(jsonFriendly['alpha'])) < 2:
-             jsonFriendly['alpha'] = 1.0
-        colorsList.append(jsonFriendly)
-        # print('\tr: {}'.format(color.color.red))
-        # print('fraction: {}'.format(color.pixel_fraction))
-        # print('\tg: {}'.format(color.color.green))
-        # print('\tb: {}'.format(color.color.blue))
-        # print('\ta: {}'.format(color.color.alpha))
+        colorsList.append({"fraction":color.pixel_fraction,"red":color.color.red,"green":color.color.green,"blue":color.color.blue,"alpha":color.color.alpha})
+        print('\tr: {}'.format(color.color.red))
+        print('fraction: {}'.format(color.pixel_fraction))
+        print('\tg: {}'.format(color.color.green))
+        print('\tb: {}'.format(color.color.blue))
+        print('\ta: {}'.format(color.color.alpha))
     colorsJSON = {"colors":colorsList}
-    print "COLOR API DISABLED"
-    # spitJSONAPIResulttoMDB(colorsJSON, "colors_ocr_google", frame_id, user_id)
+    jsonRes = json.dumps(colorsJSON)
+    with open(path+"-properties.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return 200
+    return 400
+# [END def_detect_properties_uri]
 
-    # [END migration_image_properties]
-# [END def_detect_properties]
-
-
-# [START def_detect_web]
-def detect_web(path, frame_id, user_id):
-    print "Detects web annotations given an image." + path
+# [START def_detect_web_uri]
+def detect_web_uri(uri):
+    print "Detects web annotations in the file located in Google Cloud Storage." + uri
     client = vision.ImageAnnotatorClient()
-
-    # [START migration_web_detection]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.web_detection(image=image)
     notes = response.web_detection
@@ -332,12 +294,13 @@ def detect_web(path, frame_id, user_id):
             print('Description: {}'.format(entity.description))
 
     jsonRes = MessageToJson(response)
-    JSON = {"web":jsonRes}
-
-    spitJSONAPIResulttoMDB(JSON, "web_ocr_google", frame_id, user_id)
-
-    # [END migration_web_detection]
-# [END def_detect_web]
+    with open(path+"-web.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return 200
+    return 400
+# [END def_detect_web_uri]
 
 def draw_hint(image_file, vects, hintNumber):
     """Draw a border around the image using the hints in the vector list."""
@@ -366,17 +329,13 @@ def crop_to_hint(image_file, vects, hintNumber):
     # [END crop_to_hint]
     return vects
 
-# [START def_detect_crop_hints]
-def detect_crop_hints(path):
-    print "Detects crop hints in an image." + path
+# [START def_detect_crop_hints_uri]
+def detect_crop_hints_uri(uri):
+    print "Detects crop hints in the file located in Google Cloud Storage." + uri
     client = vision.ImageAnnotatorClient()
+    image = types.Image()
+    image.source.image_uri = uri
 
-    # [START migration_crop_hints]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-    image = types.Image(content=content)
-
-    # worth looking at this bullshit constant right here
     crop_hints_params = types.CropHintsParams(aspect_ratios=[1.77])
     image_context = types.ImageContext(crop_hints_params=crop_hints_params)
 
@@ -398,10 +357,14 @@ def detect_crop_hints(path):
         cropHintsList.append(vertexes)
 
     cropHintsJSON = {"crophints":cropHintsList}
-    spitJSONAPIResulttoMDB(cropHintsJSON, "web_ocr_google", frame_id, user_id)
-
-    # [END migration_crop_hints]
-# [END def_detect_crop_hints]
+    jsonRes = json.dumps(cropHintsJSON)
+    with open(path+"-crophints.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return 200
+    return 400
+# [END def_detect_crop_hints_uri]
 
 class FeatureType(Enum):
     PAGE = 1
@@ -466,21 +429,15 @@ def render_doc_text(document, filein, fileout):
     image.save(fileout)
     # [END render_doc_text]
 
-# [START def_detect_document]
-def detect_document(path, frame_id, user_id):
-    print "Detects document features in an image." + path
+# [START def_detect_document_uri]
+def detect_document_uri(uri):
+    print "Detects document features in the file located in Google Cloud Storage." + uri
     client = vision.ImageAnnotatorClient()
-
-    # [START migration_document_text_detection]
-    with io.open(path, 'rb') as image_file:
-        content = image_file.read()
-
-    image = types.Image(content=content)
+    image = types.Image()
+    image.source.image_uri = uri
 
     response = client.document_text_detection(image=image)
     document = response.full_text_annotation
-
-    render_doc_text(document, path, path[:-4] + '-textboxes' + path[-4:])
 
     for page in document.pages:
         for block in page.blocks:
@@ -496,50 +453,51 @@ def detect_document(path, frame_id, user_id):
             for symbol in block_symbols:
                 block_text = block_text + symbol.text
 
-            # print('Block Content: {}'.format(block_text))
-            # print('Block Bounds:\n {}'.format(block.bounding_box))
-
+            print('Block Content: {}'.format(block_text))
+            print('Block Bounds:\n {}'.format(block.bounding_box))
     jsonRes = MessageToJson(response)
-    documentJSON = {"document":jsonRes}
-    spitJSONAPIResulttoMDB(documentJSON, "document_ocr_google", frame_id, user_id)
-    # [END migration_document_text_detection]
-# [END def_detect_document]
+    with open(path+"-document.json", 'wb+') as jsonAPIResultsFile:
+        print jsonRes
+        jsonAPIResultsFile.write(jsonRes)
+        jsonAPIResultsFile.close()
+        return 200
+    return 400
+# [END def_detect_document_uri]
 
-
-def runGoogleVisionSuite(path, frame_id, user_id):
+def runGoogleVisionSuiteURI(path, frame_id, user_id):
     try:
-        detect_faces(path)
+        detect_faces_uri(path)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_labels(path, frame_id, user_id)
+        detect_labels_uri(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_landmarks(path)
+        detect_landmarks_uri(path)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_logos(path)
+        detect_logos_uri(path)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_text(path, frame_id, user_id)
+        detect_text_uri(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_properties(path)
+        detect_properties_uri(path)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_web(path, frame_id, user_id)
+        detect_web_uri(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_crop_hints(path)
+        detect_crop_hints_uri(path)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_document(path, frame_id, user_id)
+        detect_document_uri(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
