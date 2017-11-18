@@ -31,5 +31,7 @@ def spitJSONAPIResulttoMDB(json, featureName, frame_id, user_id):
         documents = mdb_spitData.web_ocr_google
     elif featureName == "document_ocr_google":
         documents = mdb_spitData.document_ocr_google
+    else:
+        return
     res = documents.insert_one(json)
     print "Saved to database " + "{}".format(res.inserted_id)
