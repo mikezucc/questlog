@@ -17,6 +17,7 @@ class Frame(models.Model):
     foldername = models.CharField(max_length=50)
     main_file = models.CharField(max_length=300, default="")
     createdat = models.DateTimeField(auto_now_add=True)
+    createdat_string = models.CharField(max_length=300, default="")
     type_complex = models.CharField(max_length=300, default="")
     type_simple = models.CharField(max_length=300, default="")
     format_simple = models.CharField(max_length=300, default="")

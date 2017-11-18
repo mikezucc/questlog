@@ -92,7 +92,7 @@ def ingestFiles(request, usernameInput):
                     print "handle_uploaded_file > 4 || at " + str(counter) + ' out of ' + str(chunkCount) + ' for ' + filenameDirty
                     counter = counter + len(chunk)
                 print "handle_uploaded_file > 5 || finished writing " + filenameDirty
-        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now(), main_file=filnem)
+        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now(), createdat_string=timestampstring, main_file=filnem)
         result = pool.apply_async(processFrame, [frameO.id]) # Evaluate "f(10)" asynchronously calling callback when finished
         return HttpResponse(status=200)
     print("failed to do shit")

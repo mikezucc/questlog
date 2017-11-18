@@ -202,7 +202,7 @@ def mindPageAPIV2(request, usernameInput):
         format_simple = frame.format_simple
         print "main file " + main_file
         if main_file != "" and main_file != "NO_FILE": #fucking hell lol
-            main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple},'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
+            main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
         else:
             continue
         frame_id = frame.id:
