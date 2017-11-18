@@ -35,6 +35,8 @@ import magic
 from django.views.decorators.csrf import csrf_exempt
 import traceback
 import sys
+from pymongo import MongoClient
+from fileidentifier import *
 
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -177,6 +179,43 @@ def mindPageAPI(request, usernameInput):
 
 
 @csrf_exempt
+def mindPageAPIV2(request, usernameInput):
+    if usernameInput == None:
+        return HttpResponse(code=403)
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by('-createdat')
+    if possibleFrames == None:
+        print usernameInput + " HAS NO FRAMES"
+        return JsonResponse(json.dumps([])) # ;mao Im a god
+    frameMetadata = {}
+    framesMetadataList = []
+    mdb_client = MongoClient('localhost', '27107')
+    mdb_spitData = mdb_client.spitDataVZero
+    for frame in possibleFrames:
+        # determing main file shit
+        main_file = frame.main_file
+        main_file_metadata = {}
+        type_complex = frame.type_complex
+        type_simple = frame.type_simple
+        format_simple = frame.format_simple
+        print "main file " + main_file
+        if main_file != "" and main_file != "NO_FILE": #fucking hell lol
+            main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple},'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
+        else:
+            continue
+        frame_id = frame.id:
+        frameResults = mdb_spitData.find({"frame_id":frame_id})
+        if len(frameResults) == 0:
+            continue
+        frameResultsPyList = []
+        for resu in frameResults:
+            frameResultsPyList.append(resu)
+        finalRes = {"main_file_metadata":main_file_metadata, "parsed_info":frameResults}
+    return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
+
+@csrf_exempt
 def mindPageAPILongFormSET(request, usernameInput):
     if usernameInput == None:
         return HttpResponse(code=403)
@@ -237,67 +276,6 @@ def mindPageAPILongFormSET(request, usernameInput):
         frameMetadata = {"frameid":frame.id,"files":filesInFrameList,"foldername":foldername,"main_file":main_file, "main_file_metadata":main_file_metadata} # dictionary property
         framesMetadataList.append({"frameid":frame.id,"metadata":frameMetadata,"foldername":foldername}) # dictionary property
     return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
-
-imageFileTypes = ["jpeg", "jpg", "png"]
-soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]
-
-def determineSimpleType(filepathURI):
-    # should find a safer solution to reading, buffer may be overflow
-    with open(filepathURI, 'r') as openFile:
-        fileTypeMagic = magic.from_buffer(openFile.read(1024))
-
-        splitFileType = fileTypeMagic.split(',')
-        print splitFileType
-        slugFileType = splitFileType[0].split(' ')[0].lower()
-        print slugFileType
-
-        try:
-            print "checking " + slugFileType + " against "
-            print imageFileTypes
-            if imageFileTypes.index(slugFileType) != None:
-                print "ISSA IMAGE BITCH HA HA"
-                return "image"
-        except:
-            print "not an image"
-
-        try:
-            if soundFileTypes.index(slugFileType):
-                print "ISSA SOUND BITCH HA HA"
-                return "sound"
-        except:
-            print "not an soundfile"
-
-        openFile.close()
-    return "generic"
-
-def determineSimpleFormat(filepathURI):
-    # should find a safer solution to reading, buffer may be overflow
-    with open(filepathURI, 'r') as openFile:
-        fileTypeMagic = magic.from_buffer(openFile.read(1024))
-
-        splitFileType = fileTypeMagic.split(',')
-        print splitFileType
-        slugFileType = splitFileType[0].split(' ')[0].lower()
-        print slugFileType
-
-        try:
-            print "checking " + slugFileType + " against "
-            print imageFileTypes
-            if imageFileTypes.index(slugFileType) != None:
-                print "ISSA IMAGE BITCH HA HA"
-                return slugFileType
-        except:
-            print "not an image"
-
-        try:
-            if soundFileTypes.index(slugFileType):
-                print "ISSA SOUND BITCH HA HA"
-                return slugFileType
-        except:
-            print "not an soundfile"
-
-        openFile.close()
-    return "generic"
 
 def filesInFrame(frameName):
     fileList = []
