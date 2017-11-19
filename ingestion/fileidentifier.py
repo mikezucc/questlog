@@ -31,6 +31,7 @@ import mimetypes
 from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
 import datetime
+import magic
 
 imageFileTypes = ["jpeg", "jpg", "png"]
 soundFileTypes = ["mp3", "wav", "flac", "raw", "m4a", "aac", "iso"]
