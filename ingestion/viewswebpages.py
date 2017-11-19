@@ -124,7 +124,7 @@ def mindPage(request, usernameInput):
             thang = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + fil)},'filename':fil}
             filesInFrameList.append(thang)
         frame.metadata = {'content':filesInFrameList} # dictionary property
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.163:3001', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://54.193.74.115:3001', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
 
 # this will be a way to force client alignment. They can access via SLUGS or POST
 @csrf_exempt
@@ -205,7 +205,7 @@ def mindPageAPIV2(request, usernameInput):
             main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
         else:
             continue
-        frame_id = frame.id:
+        frame_id = frame.id
         frameResults = mdb_spitData.find({"frame_id":frame_id})
         if len(frameResults) == 0:
             continue
