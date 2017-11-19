@@ -124,7 +124,7 @@ def mindPage(request, usernameInput):
             thang = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + fil)},'filename':fil}
             filesInFrameList.append(thang)
         frame.metadata = {'content':filesInFrameList} # dictionary property
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://54.193.74.115:3001', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://54.193.74.115:3000', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
 
 # this will be a way to force client alignment. They can access via SLUGS or POST
 @csrf_exempt
