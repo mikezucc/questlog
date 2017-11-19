@@ -191,7 +191,7 @@ def mindPageAPIV2(request, usernameInput):
         return JsonResponse(json.dumps([])) # ;mao Im a god
     frameMetadata = {}
     framesMetadataList = []
-    mdb_client = MongoClient('localhost', '27107')
+    mdb_client = MongoClient('localhost', 27107)
     mdb_spitData = mdb_client.spitDataVZero
     for frame in possibleFrames:
         # determing main file shit

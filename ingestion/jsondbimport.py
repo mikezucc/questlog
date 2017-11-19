@@ -17,7 +17,7 @@ from pymongo import MongoClient
 
 def spitJSONAPIResulttoMDB(json, featureName, frame_id, user_id):
     # form new db connection each time to allow better engine threading
-    mdb_client = MongoClient('localhost', '27107')
+    mdb_client = MongoClient('localhost', 27107)
     mdb_spitData = mdb_client.spitDataVZero
     json["frame_id"] = frame_id
     json["user_id"] = user_id
