@@ -30,3 +30,8 @@ sudo pip install --upgrade google-cloud-vision
 934 sudo pip install Pillow
 ls
 sudo pip install boto3
+
+#if youre using fucking brew and system installation at the same time, sometimes brew can be tarded
+export PYTHONPATH=$PYTHONPATH:/Library/Python/2.7/site-packages/django/bin/django-admin.py
+
+export DJANGO_SETTINGS_MODULE="questlog.settings"
