@@ -1,3 +1,7 @@
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+{% if authed %}
 <form id="webIngest" method="POST" enctype="multipart/form-data" onsubmit="e.preventDefault(); return false;">
   <input type="file" name="raw" multiple >
   <button name="upload">Upload</button>
@@ -10,6 +14,7 @@
 <hr>
 <button id="processtrigger">process</button>
 <button id="burnnotice">burn notice</button>
+{% endif %}
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <!--<script type="text/javascript">

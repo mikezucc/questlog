@@ -109,8 +109,16 @@ def mindPageCurrentUser(request):
 def mindPage(request, usernameInput):
     if usernameInput == None:
         return redirect('/login/')
+    currentUser = ""
+    try:
+        currentUser = request.session['username']
+    except:
+        print "shit lmao"
+    authed = True
+    if currentUser != usernameInput:
+        authed = False
     framesMetadataList = framesOfUsername(usernameInput)
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.186:3001', 'statuscode': 'recall', 'username':usernameInput, 'frames': framesMetadataList})
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.186:3001', 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
 
 
 @csrf_exempt
