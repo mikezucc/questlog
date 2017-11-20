@@ -110,7 +110,7 @@ def mindPage(request, usernameInput):
     if usernameInput == None:
         return redirect('/login/')
     framesMetadataList = framesOfUsername(usernameInput)
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.186:3001', 'statuscode': 'transit', 'username':usernameInput, 'frames': framesMetadataList})
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.186:3001', 'statuscode': 'recall', 'username':usernameInput, 'frames': framesMetadataList})
 
 
 @csrf_exempt

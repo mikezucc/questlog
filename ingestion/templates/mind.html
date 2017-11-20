@@ -131,7 +131,7 @@
       <div style="padding-left:50px;">
       {% endif %}
       {% if webres.score > 0.5 %}
-      <p> [ {{webres.description}} - {{webres.score}} ] </p>
+      <p> [ {{webres.description}} - <a style="font-size:10px;">{{webres.score}}</a> ] </p>
       {% endif %}
     {% endfor %}
     </div>
@@ -175,6 +175,7 @@ Your browser does not support the audio tag.
   <br>
   </p>
 </a></p>
+<hr>
 {% empty %}
 <h3>No Frames</h3>
 {% endfor %}
