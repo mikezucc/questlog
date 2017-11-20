@@ -32,6 +32,8 @@ from django.http import StreamingHttpResponse
 from wsgiref.util import FileWrapper
 import datetime
 
+from fileidentifier import *
+
 from multiprocessing import Pool
 pool = Pool(processes=1)
 
@@ -48,6 +50,19 @@ UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 
 def processedSingleFrame():
     print "Finsished processing Single Frame"
+
+@csrf_exempt
+def burnNotice(request, usernameInput):
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by('-createdat')
+    if possibleFrames == None:
+        print usernameInput + " HAS NO FRAMES"
+        return HttpResponse(code=201) # ;mao Im a god
+    print "user " + usernameInput + " has " + str(len(possibleFrames)) + " frames"
+    response = possibleFrames.delete()
+    return HttpResponse("{}".format(response)) # ;mao Im a god
 
 # NO
 @csrf_exempt
@@ -74,6 +89,8 @@ def ingestFiles(request, usernameInput):
     if files != None and len(files) > 0:
         print 'uploadDataRequest > 1 || managing ' + str(len(files)) + ' of files'
         filnem = ""
+        fileTypeMagic = ""
+        # dont be scared this should only iterate once during this part of the project
         for f in files:
             print 'uploadDataRequest > 2 || queueing ' + files[f].name
             o = files[f]
@@ -92,8 +109,11 @@ def ingestFiles(request, usernameInput):
                     print "handle_uploaded_file > 4 || at " + str(counter) + ' out of ' + str(chunkCount) + ' for ' + filenameDirty
                     counter = counter + len(chunk)
                 print "handle_uploaded_file > 5 || finished writing " + filenameDirty
-        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now(), createdat_string=timestampstring, main_file=filnem)
-        result = pool.apply_async(processFrame, [frameO.id]) # Evaluate "f(10)" asynchronously calling callback when finished
+                destination.seek(0)
+                fileTypeMagic = magic.from_buffer(destination.read(1024))
+        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now(), createdat_string=timestampstring, main_file=filnem, type_complex=fileTypeMagic, type_simple=determineSimpleType(frameFolderName+filnem),format_simple=determineSimpleFormat(frameFolderName+filnem))
+        # result = pool.apply_async(processFrame, [frameO.id]) # Evaluate "f(10)" asynchronously calling callback when finished
+        processFrame(frameO.id) # lmfao u sodden bastard
         return HttpResponse(status=200)
     print("failed to do shit")
     return tryWithOneFileRead(request, usernameInput)

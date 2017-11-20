@@ -9,6 +9,7 @@
 </form>
 <hr>
 <button id="processtrigger">process</button>
+<button id="burnnotice">burn notice</button>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <!--<script type="text/javascript">
@@ -75,6 +76,22 @@
       return false;
     }
 
+    document.getElementById('burnnotice').onclick = function(event) {
+      console.log("submit event");
+      var fd = new FormData(document.getElementById("tokenSubmit"));
+      $.ajax({
+        url: "{{domain}}/burn/notice/mind/{{username}}/",
+        type: "POST",
+        data: fd,
+        processData: false,  // tell jQuery not to process the data
+        contentType: false,   // tell jQuery not to set contentType
+        enctype: "multipart/form-data"
+      }).done(function( data ) {
+          console.log( data );
+      });
+      return false;
+    }
+
     document.getElementsByName('upload')[0].addEventListener('click', function(e) {
         // var files = document.getElementsByName('raw')[0].files[0];
         // var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
@@ -103,23 +120,59 @@
 
 <hr>
 {% for frame in frames %}
-<p><a>{{frame.foldername}}</a> - <a href="/inspect/{{frame.id}}/">{{frame.createdat}}</a>
+<p><a>{{frame.frame_id}}</a> - <a href="/inspect/{{frame.id}}/">{{frame.main_file_metadata.createdat_string}}</a>
   <a>frame.metadata.content:</a>
   <p>
-  {% for fil in frame.metadata.content %}
-    <a style="padding-left:50px;" id="expand('{{frame.id}}', '{{fil.filename}}')">{{fil.filename}}</a> - <a href="/filter/?type={{fil.metadata.type}}">{{fil.metadata.type}}</a>
-    <p>
-    {% if fil.metadata.simpletype == "image" %}
-      <img src="{{domain}}/downlink/{{frame.id}}/{{fil.filename}}/" style="width: 400px; height:auto;" />
-    {% elif fil.metadata.simpletype == "sound" %}
-      <audio controls>
-        <source src="{{domain}}/downlink/{{frame.id}}/{{fil.filename}}/">
-Your browser does not support the audio tag.
-      </audio>
-    {% endif %}
-    </p>
+  <a style="padding-left:50px;" id="expand('{{frame.frame_id}}', '{{frame.main_file_metadata.filename}}')">{{frame.main_file_metadata.filename}}</a> - <a href="/filter/?type={{frame.main_file_metadata.simpletype}}">{{frame.main_file_metadata.simpletype}}</a>
+  <p>
+    {% for webres in frame.parsed_info.ocr_web.web.webDetection.webEntities %}
+      {% if forloop.first %}
+      <p>Labels:</p>
+      <div style="padding-left:50px;">
+      {% endif %}
+      {% if webres.score > 0.5 %}
+      <p> [ {{webres.description}} - {{webres.score}} ] </p>
+      {% endif %}
+    {% endfor %}
+    </div>
+
+    {% for webres in frame.parsed_info.ocr_web.web.webDetection.pagesWithMatchingImages %}
+      {% if forloop.first %}
+      <br>
+      <p>Web Query:</p>
+      <div style="padding-left:50px;">
+      {% endif %}
+      {% if forloop.counter0 < 3 %}
+      <p><a href="{{webres.url}}">{{webres.url}}</a> </p>
+      {% endif %}
+    {% endfor %}
+    </div>
+
+    {% for speechres in frame.parsed_info.speech.audio %}
+      {% if forloop.first %}
+      <br>
+      <p>Speech:</p>
+      <div style="padding-left:50px;">
+      {% endif %}
+      {% for conversantres in speechres %}
+        {% if forloop.counter0 < 3 %}
+        <p><a>{{conversantres.transcript}}</a> </p>
+        {% endif %}
+        {% endfor %}
+    {% endfor %}
+    </div>
     <br>
-  {% endfor %}
+    <a>
+  {% if frame.main_file_metadata.metadata.simpletype == "image" %}
+    <img src="{{domain}}{{frame.main_file_metadata.downlink_endpoint}}" style="width: 400px; height:auto;" />
+  {% elif frame.main_file_metadata.metadata.simpletype == "sound" %}
+    <audio controls>
+      <source src="{{domain}}{{frame.main_file_metadata.downlink_endpoint}}">
+Your browser does not support the audio tag.
+    </audio>
+  {% endif %}
+  </p>
+  <br>
   </p>
 </a></p>
 {% empty %}

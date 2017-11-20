@@ -103,3 +103,5 @@ ENV/
 /ingestion/frames/
 
 *.DS_STORE
+
+db.sqlite3

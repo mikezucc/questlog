@@ -40,6 +40,7 @@ textFileTypes = ["json","txt", "ascii", "text"]
 def determineSimpleType(filepathURI):
     # should find a safer solution to reading, buffer may be overflow
     with open(filepathURI, 'r') as openFile:
+        openFile.seek(0)
         fileTypeMagic = magic.from_buffer(openFile.read(1024))
 
         splitFileType = fileTypeMagic.split(',')

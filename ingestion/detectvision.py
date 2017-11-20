@@ -39,8 +39,10 @@ from google.cloud import vision
 from google.cloud.vision import types
 from PIL import Image, ImageDraw
 
+from jsondbimport import *
+
 # [START def_detect_faces]
-def detect_faces(path):
+def detect_faces(path, frame_id, user_id):
     print "Detects faces in an image." + path
     client = vision.ImageAnnotatorClient()
 
@@ -129,7 +131,7 @@ def detect_labels(path, frame_id, user_id):
 # [END def_detect_labels]
 
 # [START def_detect_landmarks]
-def detect_landmarks(path):
+def detect_landmarks(path, frame_id, user_id):
     print "Detects landmarks in the file." + path
     client = vision.ImageAnnotatorClient()
 
@@ -159,7 +161,7 @@ def detect_landmarks(path):
 # [END def_detect_landmarks]
 
 # [START def_detect_logos]
-def detect_logos(path):
+def detect_logos(path, frame_id, user_id):
     print "Detects logos in the file." + path
     client = vision.ImageAnnotatorClient()
 
@@ -187,7 +189,7 @@ def detect_logos(path):
 
 
 # [START def_detect_safe_search]
-def detect_safe_search(path):
+def detect_safe_search(path, frame_id, user_id):
     print "Detects unsafe features in the file." + path
     client = vision.ImageAnnotatorClient()
 
@@ -251,7 +253,7 @@ def detect_text(path, frame_id, user_id):
 # [END def_detect_text]
 
 # [START def_detect_properties]
-def detect_properties(path):
+def detect_properties(path, frame_id, user_id):
     print "Detects image properties in the file." + path
     client = vision.ImageAnnotatorClient()
 
@@ -332,7 +334,7 @@ def detect_web(path, frame_id, user_id):
             print('Description: {}'.format(entity.description))
 
     jsonRes = MessageToJson(response)
-    JSON = {"web":jsonRes}
+    JSON = {"web":json.loads(jsonRes)}
 
     spitJSONAPIResulttoMDB(JSON, "web_ocr_google", frame_id, user_id)
 
@@ -367,7 +369,7 @@ def crop_to_hint(image_file, vects, hintNumber):
     return vects
 
 # [START def_detect_crop_hints]
-def detect_crop_hints(path):
+def detect_crop_hints(path, frame_id, user_id):
     print "Detects crop hints in an image." + path
     client = vision.ImageAnnotatorClient()
 
@@ -398,7 +400,7 @@ def detect_crop_hints(path):
         cropHintsList.append(vertexes)
 
     cropHintsJSON = {"crophints":cropHintsList}
-    spitJSONAPIResulttoMDB(cropHintsJSON, "web_ocr_google", frame_id, user_id)
+    spitJSONAPIResulttoMDB(cropHintsJSON, "crophints_ocr_google", frame_id, user_id)
 
     # [END migration_crop_hints]
 # [END def_detect_crop_hints]
@@ -508,7 +510,7 @@ def detect_document(path, frame_id, user_id):
 
 def runGoogleVisionSuite(path, frame_id, user_id):
     try:
-        detect_faces(path)
+        detect_faces(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
@@ -516,11 +518,11 @@ def runGoogleVisionSuite(path, frame_id, user_id):
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_landmarks(path)
+        detect_landmarks(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_logos(path)
+        detect_logos(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
@@ -528,7 +530,7 @@ def runGoogleVisionSuite(path, frame_id, user_id):
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_properties(path)
+        detect_properties(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:
@@ -536,7 +538,7 @@ def runGoogleVisionSuite(path, frame_id, user_id):
     except Exception as e:
         print traceback.format_exc()
     try:
-        detect_crop_hints(path)
+        detect_crop_hints(path, frame_id, user_id)
     except Exception as e:
         print traceback.format_exc()
     try:

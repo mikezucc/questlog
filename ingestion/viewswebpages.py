@@ -37,6 +37,7 @@ import traceback
 import sys
 from pymongo import MongoClient
 from fileidentifier import *
+from jsondbimport import *
 
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -108,23 +109,47 @@ def mindPageCurrentUser(request):
 def mindPage(request, usernameInput):
     if usernameInput == None:
         return redirect('/login/')
+    framesMetadataList = framesOfUsername(usernameInput)
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.186:3001', 'statuscode': 'transit', 'username':usernameInput, 'frames': framesMetadataList})
+
+
+@csrf_exempt
+def mindPageAPIV2(request, usernameInput):
+    if usernameInput == None:
+        return HttpResponse(code=403)
+    framesMetadataList = framesOfUsername(usernameInput)
+    return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
+
+def framesOfUsername(usernameInput):
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:
-        return redirect('/login/')
-    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by("-createdat")
+        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by('-createdat')
     if possibleFrames == None:
-        return render(request, MINDPAGETEMPLATE, {'statuscode': 'genesis'})
-    # is there a way to make this recursive? so its higher than 2
+        print usernameInput + " HAS NO FRAMES"
+        return JsonResponse(json.dumps([])) # ;mao Im a god
+    print "user " + usernameInput + " has " + str(len(possibleFrames)) + " frames"
+    frameMetadata = {}
+    framesMetadataList = []
+    mdb_client = MongoClient('localhost', 27017)
+    mdb_spitData = mdb_client.spitDataVZero
     for frame in possibleFrames:
-        foldername = frame.foldername
-        files = filesInFrame(foldername)
-        filesInFrameList = []
-        for fil in files:
-            filebuffer = magic.from_buffer(open(foldername + fil, 'r').read(1024))
-            thang = {'metadata':{'type':filebuffer,'simpletype':determineSimpleType(foldername + fil)},'filename':fil}
-            filesInFrameList.append(thang)
-        frame.metadata = {'content':filesInFrameList} # dictionary property
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://54.193.74.115:3000', 'statuscode': 'transit', 'username':usernameInput, 'frames': possibleFrames})
+        # determing main file shit
+        main_file = frame.main_file
+        main_file_metadata = {}
+        type_complex = frame.type_complex
+        type_simple = frame.type_simple
+        format_simple = frame.format_simple
+        print "main file " + main_file
+        if main_file != "" and main_file != "NO_FILE": #fucking hell lol
+            main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
+        else:
+            continue
+        frame_id = frame.id
+        frameResults = vomitJSONAPIResultstoAPI(frame_id)
+        finalRes = {"main_file_metadata":main_file_metadata, "parsed_info":frameResults, 'frame_id':frame.id}
+        framesMetadataList.append(finalRes)
+    return framesMetadataList
 
 # this will be a way to force client alignment. They can access via SLUGS or POST
 @csrf_exempt
@@ -175,44 +200,6 @@ def mindPageAPI(request, usernameInput):
                 resFile.close()
                 filesInFrameList.append(thang)
         framesMetadataList.append({"frameid":frame.id,"files":filesInFrameList,"foldername":foldername}) # dictionary property
-    return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
-
-
-@csrf_exempt
-def mindPageAPIV2(request, usernameInput):
-    if usernameInput == None:
-        return HttpResponse(code=403)
-    possibleMind = Mind.objects.get(username=usernameInput)
-    if possibleMind == None:
-        return HttpResponse(code=401) # differing codes reveal to blackbox testing
-    possibleFrames = Frame.objects.filter(owner=possibleMind).order_by('-createdat')
-    if possibleFrames == None:
-        print usernameInput + " HAS NO FRAMES"
-        return JsonResponse(json.dumps([])) # ;mao Im a god
-    frameMetadata = {}
-    framesMetadataList = []
-    mdb_client = MongoClient('localhost', 27107)
-    mdb_spitData = mdb_client.spitDataVZero
-    for frame in possibleFrames:
-        # determing main file shit
-        main_file = frame.main_file
-        main_file_metadata = {}
-        type_complex = frame.type_complex
-        type_simple = frame.type_simple
-        format_simple = frame.format_simple
-        print "main file " + main_file
-        if main_file != "" and main_file != "NO_FILE": #fucking hell lol
-            main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
-        else:
-            continue
-        frame_id = frame.id
-        frameResults = mdb_spitData.find({"frame_id":frame_id})
-        if len(frameResults) == 0:
-            continue
-        frameResultsPyList = []
-        for resu in frameResults:
-            frameResultsPyList.append(resu)
-        finalRes = {"main_file_metadata":main_file_metadata, "parsed_info":frameResults}
     return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
 
 @csrf_exempt

@@ -99,7 +99,7 @@ def processFrame(frameId):
             # except:
             #     # maybe this can be done by the file level
             #     print "never processed this directory"
-            frameDictionary = {"frameid":frame.id,"filepathURI":(foldername+fil),"file":fil,"foldername":foldername}
+            frameDictionary = {"frame_id":frame.id, "user_id":frame.owner.id,"filepathURI":(foldername+fil),"file":fil,"foldername":foldername}
             startFileProcessingPipeline(frameDictionary)
     return HttpResponse(status=200)
 
