@@ -118,7 +118,7 @@ def mindPage(request, usernameInput):
     if currentUser != usernameInput:
         authed = False
     framesMetadataList = framesOfUsername(usernameInput)
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://192.168.1.186:3001', 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://67.169.94.129:3001', 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
 
 
 @csrf_exempt
