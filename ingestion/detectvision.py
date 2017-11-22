@@ -502,6 +502,8 @@ def detect_document(path, frame_id, user_id):
             # print('Block Bounds:\n {}'.format(block.bounding_box))
 
     jsonRes = MessageToJson(response)
+    if type(jsonRes) is str:
+        jsonRes = json.loads(jsonRes)
     documentJSON = {"document":jsonRes}
     spitJSONAPIResulttoMDB(documentJSON, "document_ocr_google", frame_id, user_id)
     # [END migration_document_text_detection]
