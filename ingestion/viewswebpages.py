@@ -79,9 +79,30 @@ def loginPage(request):
     request.session['username'] = ""
     return render(request, LOGINTEMPLATE, {'inputCode':200})
 
+@csrf_exempt
+def loginRequestExempt(request):
+    try:
+        inputUsername = request.POST['username']
+        inputPassword = request.POST['password']
+    except:
+        return HttpResponse(code=400)
+    if inputPassword == None:
+        return HttpResponse(code=400)
+    users = Mind.objects.filter(username=inputUsername)
+    if len(users) == 0:
+        newUser = Mind.objects.create(username=inputUsername, password=inputPassword, profile_picture="[]")
+        newUser.save()
+    elif users[0].password != inputPassword:
+        return return HttpResponse(code=401)
+    request.session['username'] = inputUsername
+    return HttpResponse(code=200)
+
 def loginRequest(request):
-    inputUsername = request.POST['username']
-    inputPassword = request.POST['password']
+    try:
+        inputUsername = request.POST['username']
+        inputPassword = request.POST['password']
+    except:
+        return render(request, LOGINTEMPLATE, {'inputCode':400})
     if inputPassword == None:
         return render(request, LOGINTEMPLATE, {'inputCode':400})
     users = Mind.objects.filter(username=inputUsername)
