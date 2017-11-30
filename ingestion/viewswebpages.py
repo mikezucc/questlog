@@ -93,7 +93,7 @@ def loginRequestExempt(request):
         newUser = Mind.objects.create(username=inputUsername, password=inputPassword, profile_picture="[]")
         newUser.save()
     elif users[0].password != inputPassword:
-        return return HttpResponse(code=401)
+        return HttpResponse(code=401)
     request.session['username'] = inputUsername
     return HttpResponse(code=200)
 
@@ -139,7 +139,7 @@ def mindPage(request, usernameInput):
     if currentUser != usernameInput:
         authed = False
     framesMetadataList = framesOfUsername(usernameInput)
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://67.169.94.129:3001', 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
+    return render(request, MINDPAGETEMPLATE, {'domain': 'http://54.183.237.220:3000', 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
 
 
 @csrf_exempt
