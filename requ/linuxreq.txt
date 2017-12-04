@@ -1,0 +1,34 @@
+git status
+sudo git pull origin master
+sudo python manage.py migrate
+sudo ls
+sudo pip install Django
+sudo sudo pip install Django
+sudo sudo pip install --upgrade Django
+sudo python manage.py migrate
+sudo pip install boto
+sudo python manage.py migrate
+sudo pip install magic
+sudo pip install python-magic
+sudo python manage.py migrate
+sudo pip install libmagic
+sudo python manage.py migrate
+sudo pip install libmagic
+sudo sudo port install file
+sudo brew install file-formula
+sudo python manage.py migrate
+sudo history
+sudo pip install protobuf
+sudo pip install enum
+sudo pip install google-cloud
+
+sudo pip install --upgrade google-api-python-client
+sudo pip install --upgrade google-cloud
+sudo pip install --upgrade google-cloud-vision
+
+934 sudo pip install Pillow
+ls
+sudo pip install boto3
+
+#binux
+sudo apt-get install build-essential autoconf libtool pkg-config python-opengl python-imaging python-pyrex python-pyside.qtopengl idle-python2.7 qt4-dev-tools qt4-designer libqtgui4 libqtcore4 libqt4-xml libqt4-test libqt4-script libqt4-network libqt4-dbus python-qt4 python-qt4-gl libgle3 python-dev
