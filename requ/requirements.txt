@@ -10,3 +10,5 @@ google-cloud
 google-cloud-vision
 Pillow
 boto3
+pymongo
+google-cloud-speech
