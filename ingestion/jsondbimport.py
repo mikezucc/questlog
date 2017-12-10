@@ -45,16 +45,28 @@ def vomitJSONAPIResultstoAPI(frame_id):
     for res in mdb_spitData.audio_speech_google.find({"frame_id":frame_id}):
         res['_id'] = ""
         mappedRes["speech"] = res
+        mappedRes["type"] = "ocr_speech"
     for res in mdb_spitData.text_ocr_google.find({"frame_id":frame_id}):
         res['_id'] = ""
         mappedRes["ocr_text"] = res
+        mappedRes["type"] = "ocr_text"
     for res in mdb_spitData.labels_ocr_google.find({"frame_id":frame_id}):
         res['_id'] = ""
         mappedRes["ocr_label"] = res
+        mappedRes["type"] = "ocr_label"
     for res in mdb_spitData.web_ocr_google.find({"frame_id":frame_id}):
         res['_id'] = ""
         mappedRes["ocr_web"] = res
+        mappedRes["type"] = "ocr_web"
     for res in mdb_spitData.document_ocr_google.find({"frame_id":frame_id}):
         res['_id'] = ""
         mappedRes["ocr_document"] = res
+        mappedRes["type"] = "ocr_document"
     return mappedRes
+
+def spitTermListToMongo(term_list):
+    mdb_client = MongoClient('localhost', 27017)
+    mdb_termData = mdb_client.termDataVZero
+    for term_read in term_list
+        for term_found in mdb_termData.tokenized.find({"term":term_read}):
+            print "found term"
