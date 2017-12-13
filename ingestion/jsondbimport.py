@@ -1,6 +1,9 @@
 from pymongo import MongoClient
 from bson.json_util import dumps
 
+def connectionToMongoDB():
+    return MongoClient('localhost', 27017)
+
 # ok so heres the basic idea with this. we want to design the core technology in such a way where
 # the actual data stores and tables can be very easily switched to different service providers.
 # we can remain independent and very amacable towards liftandshifts
@@ -18,7 +21,7 @@ from bson.json_util import dumps
 
 def spitJSONAPIResulttoMDB(json, featureName, frame_id, user_id):
     # form new db connection each time to allow better engine threading
-    mdb_client = MongoClient('localhost', 27017)
+    mdb_client = connectionToMongoDB()
     mdb_spitData = mdb_client.spitDataVZero
     json["frame_id"] = frame_id
     json["user_id"] = user_id
@@ -39,7 +42,7 @@ def spitJSONAPIResulttoMDB(json, featureName, frame_id, user_id):
 
 
 def vomitJSONAPIResultstoAPI(frame_id):
-    mdb_client = MongoClient('localhost', 27017)
+    mdb_client = connectionToMongoDB()
     mdb_spitData = mdb_client.spitDataVZero
     mappedRes = {}
     for res in mdb_spitData.audio_speech_google.find({"frame_id":frame_id}):
@@ -64,9 +67,16 @@ def vomitJSONAPIResultstoAPI(frame_id):
         mappedRes["type"] = "ocr_document"
     return mappedRes
 
-def spitTermListToMongo(term_list):
-    mdb_client = MongoClient('localhost', 27017)
+def spitTermListToMongo(frame_id, term_list):
+    mdb_client = connectionToMongoDB()
     mdb_termData = mdb_client.termDataVZero
     for term_read in term_list
-        for term_found in mdb_termData.tokenized.find({"term":term_read}):
-            print "found term"
+        term_json = {"term":term_read, "frame_id":frame_id}
+        queryRes = mdb_termData.tokenized.find_one(term_json)
+        if queryRes != None:
+            print "exist term + {}".format(res.inserted_id)
+            continue
+        else:
+            term_json["count"] = 0
+            print "++ inserted new term + {}".format(res.inserted_id)
+            documents.insert_one(term_json)

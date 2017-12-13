@@ -123,7 +123,7 @@ def extractTermsFromFrame(mongo_frame):
                         return [clean_text_tokens]
     return []
 
-def combAllFramesForTerms(request, usernameInput):
+def combAllFramesForTerms(usernameInput):
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:
         return HttpResponse(code=401) # differing codes reveal to blackbox testing
@@ -135,16 +135,23 @@ def combAllFramesForTerms(request, usernameInput):
     frameMetadata = {}
     framesMetadataList = []
     for frame in possibleFrames:
-        # determing main file shit
-        main_file = frame.main_file`
-        if main_file != "" and main_file != "NO_FILE": #fucking hell lol
-            print "valid file"
-        else:
-            continue
-        frame_id = frame.id
-        frameResults = vomitJSONAPIResultstoAPI(frame_id)
-        for mongo_frame in frameResults:
-            frame_term_lists = extractTermsFromFrame(mongo_frame)
-            for term_list in frame_term_lists:
-                spitTermListToMongo(term_list)
+        combSingleFrameForTerms(frame.id)
     return HttpResponse(status=200)
+
+def combSingleFrameForTerms(frame_id):
+    possibleFrames = Frame.objects.filter(id=frame_id)
+    if possibleFrames == None:
+        print "Could not find frame to comb"
+        return
+    # determing main file shit
+    main_file = frame.main_file
+    if main_file != "" and main_file != "NO_FILE": #fucking hell lol
+        print "valid file"
+    else:
+        continue
+    frame_id = frame.id
+    frameResults = vomitJSONAPIResultstoAPI(frame_id)
+    for mongo_frame in frameResults:
+        frame_term_lists = extractTermsFromFrame(mongo_frame)
+        for term_list in frame_term_lists:
+            spitTermListToMongo(frame_id, term_list)
