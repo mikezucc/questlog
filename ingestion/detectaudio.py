@@ -57,7 +57,7 @@ def convertToL16(path):
     openedFile = AudioSegment.from_file(path)
     convertFilePath = path+"-L16convert.raw"
     #"-b:a", "16000""-b:a", "16000"
-    openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "48000"])
+    openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "16000"])
     return convertFilePath
 
 # [START def_transcribe_file]
@@ -73,7 +73,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
     audio = types.RecognitionAudio(content=content)
     config = types.RecognitionConfig(
         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=48000,
+        sample_rate_hertz=16000,
         language_code='en-US')
 
     # [START migration_async_response]
@@ -81,7 +81,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
     # [END migration_async_request]
 
     print('Waiting for operation to complete...')
-    result = operation.result(timeout=90)
+    result = operation.result(timeout=1000)
 
     resultsJSONList = []
     for res in result.results:
