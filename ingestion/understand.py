@@ -116,6 +116,21 @@ def extractTermsFromFrame(mongo_frame):
             audio_res = speech_res["audio"]
             if len(audio_res) > 0:
                 transcription_results = audio_res[0]
+                for transcription_model in transcription_results:
+                    if "word_marks" in transcription_model:
+                        word_marks = transcription_model["word_marks"]
+                        return word_marks
+    return []
+
+# frame object
+# mapped in mongodb as frame_id
+def extractTermsFromFrameTranscript(mongo_frame):
+    if "speech" in mongo_frame:
+        speech_res = mongo_frame["speech"]
+        if "audio" in speech_res:
+            audio_res = speech_res["audio"]
+            if len(audio_res) > 0:
+                transcription_results = audio_res[0]
                 for transcription_model  in transcription_results:
                     if "transcript" in transcription_model:
                         transcript_text_tokens = transcription_model["transcript"].split(' ')

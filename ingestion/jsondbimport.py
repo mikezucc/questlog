@@ -70,13 +70,18 @@ def vomitJSONAPIResultstoAPI(frame_id):
 def spitTermListToMongo(frame_id, term_list):
     mdb_client = connectionToMongoDB()
     mdb_termData = mdb_client.termDataVZero
-    for term_read in term_list
+    for word_mark in term_list
+        term_read = word_mark.word
+        start_time = word_mark.start_time
         term_json = {"term":term_read, "frame_id":frame_id}
-        queryRes = mdb_termData.tokenized.find_one(term_json)
+        queryRes = mdb_termData.term_counts.find_one(term_json)
         if queryRes != None:
             print "exist term + {}".format(res.inserted_id)
-            continue
         else:
             term_json["count"] = 0
             print "++ inserted new term + {}".format(res.inserted_id)
-            documents.insert_one(term_json)
+            mdb_termData.term_counts.insert_one(term_json)
+        term_json = {"term":term_read, "start_time":start_time, "frame_id":frame_id}
+        queryRes = mdb_termData.term_uniques.find_one(term_json)
+        if queryRes == None:
+            mdb_termData.term_uniques.insert_one(term_json)
