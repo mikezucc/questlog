@@ -69,7 +69,7 @@ def vomitJSONAPIResultstoAPI(frame_id):
 def spitTermListToMongo(frame_id, term_list):
     mdb_client = connectionToMongoDB()
     mdb_termData = mdb_client.termDataVZero
-    for word_mark in term_list
+    for word_mark in term_list:
         term_read = word_mark.word
         start_time = word_mark.start_time
         term_json = {"term":term_read, "frame_id":frame_id}

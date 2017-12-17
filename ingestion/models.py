@@ -53,7 +53,7 @@ class AllTerms(models.Model):
                 "term_raw":term_raw,
                 "start_time":start_time,
                 "term_set_parent":term_set_parent,
-                "referencing_frame":referencing_frame
+                "referencing_frame":referencing_frame,
                 "createdat":"{}".format(createdat)}
 
 class LongFormSet(models.Model):

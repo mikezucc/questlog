@@ -47,7 +47,7 @@ from google.cloud.speech import types
 
 from jsondbimport import *
 
-kAUDIO_TIME_SLICE_WINDOW = 15
+kAUDIO_TIME_SLICE_WINDOW = 20
 
 def runGoogleSpeechSuite(frameDictionary, frame_id, user_id):
     transcribe_file(frameDictionary, frame_id, user_id)
@@ -60,29 +60,31 @@ def convertToL16(path):
     openedFile = AudioSegment.from_file(path)
 
     needsSlice = False
-    fifteenSeconds = kAUDIO_TIME_SLICE_WINDOW * 1000
+    fifteenSeconds = kAUDIO_TIME_SLICE_WINDOW # SIKE HAHA
     soundFiles = []
-    cursor = 0 * 1000
-    if openedFile.duration_seconds >= fifteenSeconds:
+    cursor = 0
+    print "::::::::" + str(fifteenSeconds) + " AUDIO FILE DURATION: " + str(openedFile.duration_seconds)
+    if openedFile.duration_seconds >= kAUDIO_TIME_SLICE_WINDOW:
         needsSlice = True
         while cursor < openedFile.duration_seconds:
+            print ":::::::: PROCESSING SLICE: " + str(cursor) + "/" + str(openedFile.duration_seconds)
             interval = None
             if cursor+fifteenSeconds < openedFile.duration_seconds:
-                interval = openedFile[cursor:cursor+fifteenSeconds]
+                interval = openedFile[(cursor*1000):(cursor+fifteenSeconds)*1000]
             else:
-                interval = openedFile[cursor:]
+                interval = openedFile[(cursor*1000):]
             if interval != None:
                 convertFilePath = path + str(cursor) + "-L16convert.raw"
                 #"-b:a", "16000""-b:a", "16000"
-                openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "16000"])
+                interval.export(convertFilePath, format="s16le", parameters=["-b:a", "44100"])
                 soundFiles.append(convertFilePath)
             cursor = cursor + fifteenSeconds
     else:
         #"-b:a", "16000""-b:a", "16000"
-        openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "16000"])
         convertFilePath = path+"-L16convert.raw"
+        openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "44100"])
         soundFiles = [convertFilePath]
-    return (soundFiles, needsSlice, sliceCount)
+    return (soundFiles, needsSlice)
 
 # [START def_transcribe_file]
 def transcribe_file(filepathURI, frame_id, user_id):
@@ -91,16 +93,17 @@ def transcribe_file(filepathURI, frame_id, user_id):
 
     # [START migration_async_request]
     resultsJSONList = []
-    (soundFiles, needsSlice, sliceCount) = convertToL16(speech_file)
+    (soundFiles, needsSlice) = convertToL16(speech_file)
     mark_time_offset_counter = 0
     for convertedFilePath in soundFiles:
         with io.open(convertedFilePath, 'rb') as audio_file:
             content = audio_file.read()
 
+        print ":::::::::::::: AUDIO SLICE: " + str(len(content))
         audio = types.RecognitionAudio(content=content)
         config = types.RecognitionConfig(
             encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=16000,
+            sample_rate_hertz=44100,
             language_code='en-US',
             enable_word_time_offsets=True)
 
