@@ -52,13 +52,35 @@ def runGoogleSpeechSuite(frameDictionary, frame_id, user_id):
 
 #
 # contains the path to the converted file
+# return (convertFilePath, needsSlice, sliceCount)
 #
 def convertToL16(path):
     openedFile = AudioSegment.from_file(path)
-    convertFilePath = path+"-L16convert.raw"
-    #"-b:a", "16000""-b:a", "16000"
-    openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "16000"])
-    return convertFilePath
+
+    needsSlice = False
+    fifteenSeconds = 15 * 1000
+    soundFiles = []
+    cursor = 0 * 1000
+    if openedFile.duration_seconds >= fifteenSeconds:
+        needsSlice = True
+        while cursor < openedFile.duration_seconds:
+            interval = None
+            if cursor+fifteenSeconds < openedFile.duration_seconds:
+                interval = openedFile[cursor:cursor+fifteenSeconds]
+            else:
+                interval = openedFile[cursor:]
+            if interval != None:
+                convertFilePath = path + str(cursor) + "-L16convert.raw"
+                #"-b:a", "16000""-b:a", "16000"
+                openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "16000"])
+                soundFiles.append(convertFilePath)
+            cursor = cursor + fifteenSeconds
+    else:
+        #"-b:a", "16000""-b:a", "16000"
+        openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "16000"])
+        convertFilePath = path+"-L16convert.raw"
+        soundFiles = [convertFilePath]
+    return (soundFiles, needsSlice, sliceCount)
 
 # [START def_transcribe_file]
 def transcribe_file(filepathURI, frame_id, user_id):
@@ -66,37 +88,38 @@ def transcribe_file(filepathURI, frame_id, user_id):
     client = speech.SpeechClient()
 
     # [START migration_async_request]
-    convertedFilePath = convertToL16(speech_file)
-    with io.open(convertedFilePath, 'rb') as audio_file:
-        content = audio_file.read()
-
-    audio = types.RecognitionAudio(content=content)
-    config = types.RecognitionConfig(
-        encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-        sample_rate_hertz=16000,
-        language_code='en-US',
-        enable_word_time_offsets=True)
-
-    # [START migration_async_response]
-    operation = client.long_running_recognize(config, audio)
-    # [END migration_async_request]
-
-    print('Waiting for operation to complete...')
-    result = operation.result(timeout=1000)
-
     resultsJSONList = []
-    for res in result.results:
-        for alternative in res.alternatives:
-            word_marks = []
-            for word_info in alternative.words:
-                word_mark = {"word":word_info.word, "start":word_info.start_time.seconds}
-                word_marks.append(word_mark)
-                storeToTermMapSQL(word_info.word, word_info.start_time, frame_id, user_id)
-            scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
-            phrasonJSON.append(scopeJSON)
-            print('Transcript: {}'.format(alternative.transcript))
-            print('Confidence: {}'.format(alternative.confidence))
-        resultsJSONList.append(phrasonJSON)
+    (soundFiles, needsSlice, sliceCount) = convertToL16(speech_file)
+    for convertedFilePath in soundFiles:
+        with io.open(convertedFilePath, 'rb') as audio_file:
+            content = audio_file.read()
+
+        audio = types.RecognitionAudio(content=content)
+        config = types.RecognitionConfig(
+            encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+            sample_rate_hertz=16000,
+            language_code='en-US',
+            enable_word_time_offsets=True)
+
+        # [START migration_async_response]
+        operation = client.long_running_recognize(config, audio)
+        # [END migration_async_request]
+
+        print('Waiting for operation to complete...')
+        result = operation.result(timeout=1000)
+
+        for res in result.results:
+            for alternative in res.alternatives:
+                word_marks = []
+                for word_info in alternative.words:
+                    word_mark = {"word":word_info.word, "start":word_info.start_time.seconds}
+                    word_marks.append(word_mark)
+                    storeToTermMapSQL(word_info.word, word_info.start_time, frame_id, user_id)
+                scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
+                phrasonJSON.append(scopeJSON)
+                print('Transcript: {}'.format(alternative.transcript))
+                print('Confidence: {}'.format(alternative.confidence))
+            resultsJSONList.append(phrasonJSON)
 
     audioJSON = {"audio":resultsJSONList}
     spitJSONAPIResulttoMDB(audioJSON, "audio_speech_google", frame_id, user_id)
