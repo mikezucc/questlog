@@ -154,6 +154,18 @@ def mindPageAPIV2(request, usernameInput):
     framesMetadataList = framesOfUsername(usernameInput)
     return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
 
+@csrf_exempt
+def termsPageAPIV1(request, usernameInput):
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return HttpResponse(status=401) # differing codes reveal to blackbox testing
+    termSetEntries = TermSet.objects.filter(user_parent=possibleMind.id).order_by('-createdat')
+    result = []
+    for termSetEntry in termSetEntries:
+        termDict = termSetEntry.toDictionary()
+        result.append(termDict)
+    return JsonResponse({"response":result,"secret_message":"suck a dick brody"})
+
 def framesOfUsername(usernameInput):
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:

@@ -91,6 +91,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
             for word_info in alternative.words:
                 word_mark = {"word":word_info.word, "start":word_info.start_time.seconds}
                 word_marks.append(word_mark)
+                storeToTermMapSQL(word_info.word, word_info.start_time, frame_id, user_id)
             scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
             phrasonJSON.append(scopeJSON)
             print('Transcript: {}'.format(alternative.transcript))
@@ -103,6 +104,14 @@ def transcribe_file(filepathURI, frame_id, user_id):
     # [END migration_async_response]
 # [END def_transcribe_file]
 
+def storeToTermMapSQL(word, start_time, frame_id, user_id):
+    termSetEntry = TermSet.objects.get(term_raw=word,user_parent=user_id)
+    if termSetEntry == None:
+        termSetEntry = TermSet.objects.create(term_raw=word,user_parent=user_id,google_entity_id="",rough_count=0,createdat=datetime.datetime.now())
+    else:
+        termSetEntry.rough_count = termSetEntry.rough_count + 1
+        termSetEntry.save()
+    AllTerms.objects.create(term_raw=word,user_parent=user_id,term_set_parent=termSetEntry,referencing_frame=frame_id,createdat=datetime.datetime.now(),start_time=start_time)
 
 # [START def_transcribe_gcs]
 def transcribe_gcs(gcs_uri):

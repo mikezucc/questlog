@@ -25,15 +25,36 @@ class Frame(models.Model):
 
 # these appear to be used with the audio transcription
 class TermSet(models.Model):
+    user_parent = models.ForeignKey(Mind, on_delete=models.CASCADE)
     term_raw = models.CharField(max_length=100)
     google_entity_id = models.CharField(max_length=50)
+    rough_count = models.IntegerField()
+    createdat = models.DateTimeField(auto_now_add=True)
     metadata = {}
+
+    def toDictionary():
+        return {"user_parent":user_parent,
+                "term_raw":term_raw,
+                "google_entity_id":google_entity_id,
+                "rough_count":rough_count,
+                "createdat":"{}".format(createdat)}
 
 class AllTerms(models.Model):
     term_raw = models.CharField(max_length=100)
+    start_time = models.IntegerField()
+    user_parent = models.ForeignKey(Mind, on_delete=models.CASCADE)
     term_set_parent = models.ForeignKey(TermSet, on_delete=models.CASCADE)
     referencing_frame = models.ForeignKey(Frame, on_delete=models.CASCADE)
+    createdat = models.DateTimeField(auto_now_add=True)
     metadata = {}
+
+    def toDictionary():
+        return {"user_parent":user_parent,
+                "term_raw":term_raw,
+                "start_time":start_time,
+                "term_set_parent":term_set_parent,
+                "referencing_frame":referencing_frame
+                "createdat":"{}".format(createdat)}
 
 class LongFormSet(models.Model):
     long_form_string = models.CharField(max_length=500)

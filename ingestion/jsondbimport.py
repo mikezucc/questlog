@@ -40,7 +40,6 @@ def spitJSONAPIResulttoMDB(json, featureName, frame_id, user_id):
     res = documents.insert_one(json)
     print "Saved to database " + "{}".format(res.inserted_id)
 
-
 def vomitJSONAPIResultstoAPI(frame_id):
     mdb_client = connectionToMongoDB()
     mdb_spitData = mdb_client.spitDataVZero
@@ -85,3 +84,12 @@ def spitTermListToMongo(frame_id, term_list):
         queryRes = mdb_termData.term_uniques.find_one(term_json)
         if queryRes == None:
             mdb_termData.term_uniques.insert_one(term_json)
+
+def vomitTermListToAPI(frame_id):
+    mdb_client = connectionToMongoDB()
+    mdb_spitData = mdb_client.termDataVZero
+    mappedRes = []
+    for res in mdb_spitData.term_uniques.find({"frame_id":frame_id}):
+        res['_id'] = ""
+        mappedRes.append(res)
+    return mappedRes
