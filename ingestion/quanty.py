@@ -154,6 +154,7 @@ def startFileProcessingPipeline(frameDictionary):
                 print "*** queue AUDIO process for " + filepathURI
                 try:
                     processSoundFile(frameDictionary, frame_id, user_id)
+                    combSingleFrameForTerms(frame_id)
                     # importFrameToDatabase(frameDictionary, "audio")
                 except Exception as e:
                     print traceback.format_exc()

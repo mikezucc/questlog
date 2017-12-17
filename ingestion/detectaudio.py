@@ -74,7 +74,8 @@ def transcribe_file(filepathURI, frame_id, user_id):
     config = types.RecognitionConfig(
         encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
         sample_rate_hertz=16000,
-        language_code='en-US')
+        language_code='en-US',
+        enable_word_time_offsets=True)
 
     # [START migration_async_response]
     operation = client.long_running_recognize(config, audio)
@@ -85,9 +86,12 @@ def transcribe_file(filepathURI, frame_id, user_id):
 
     resultsJSONList = []
     for res in result.results:
-        phrasonJSON = []
         for alternative in res.alternatives:
-            scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence)}
+            word_marks = []
+            for word_info in alternative.words:
+                word_mark = {"word":word_info.word, "start":word_info.start_time.seconds}
+                word_marks.append(word_mark)
+            scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
             phrasonJSON.append(scopeJSON)
             print('Transcript: {}'.format(alternative.transcript))
             print('Confidence: {}'.format(alternative.confidence))
