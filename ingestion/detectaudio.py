@@ -47,6 +47,8 @@ from google.cloud.speech import types
 
 from jsondbimport import *
 
+kAUDIO_TIME_SLICE_WINDOW = 15
+
 def runGoogleSpeechSuite(frameDictionary, frame_id, user_id):
     transcribe_file(frameDictionary, frame_id, user_id)
 
@@ -58,7 +60,7 @@ def convertToL16(path):
     openedFile = AudioSegment.from_file(path)
 
     needsSlice = False
-    fifteenSeconds = 15 * 1000
+    fifteenSeconds = kAUDIO_TIME_SLICE_WINDOW * 1000
     soundFiles = []
     cursor = 0 * 1000
     if openedFile.duration_seconds >= fifteenSeconds:
@@ -90,6 +92,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
     # [START migration_async_request]
     resultsJSONList = []
     (soundFiles, needsSlice, sliceCount) = convertToL16(speech_file)
+    mark_time_offset_counter = 0
     for convertedFilePath in soundFiles:
         with io.open(convertedFilePath, 'rb') as audio_file:
             content = audio_file.read()
@@ -112,7 +115,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
             for alternative in res.alternatives:
                 word_marks = []
                 for word_info in alternative.words:
-                    word_mark = {"word":word_info.word, "start":word_info.start_time.seconds}
+                    word_mark = {"word":word_info.word, "start":mark_time_offset_counter+word_info.start_time.seconds}
                     word_marks.append(word_mark)
                     storeToTermMapSQL(word_info.word, word_info.start_time, frame_id, user_id)
                 scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
@@ -120,6 +123,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
                 print('Transcript: {}'.format(alternative.transcript))
                 print('Confidence: {}'.format(alternative.confidence))
             resultsJSONList.append(phrasonJSON)
+        mark_time_offset_counter = mark_time_offset_counter + kAUDIO_TIME_SLICE_WINDOW
 
     audioJSON = {"audio":resultsJSONList}
     spitJSONAPIResulttoMDB(audioJSON, "audio_speech_google", frame_id, user_id)
