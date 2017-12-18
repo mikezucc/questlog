@@ -47,6 +47,13 @@ from google.cloud.speech import types
 
 from jsondbimport import *
 
+#       if ms is not None:
+#           return ms * (self.frame_rate / 1000.0)
+
+    # @property
+    # def duration_seconds(self):
+    #     return self.frame_rate and self.frame_count() / self.frame_rate or 0.0
+
 kAUDIO_TIME_SLICE_WINDOW = 30
 
 def runGoogleSpeechSuite(frameDictionary, frame_id, user_id):
@@ -58,7 +65,8 @@ def runGoogleSpeechSuite(frameDictionary, frame_id, user_id):
 #
 def convertToL16(path):
     openedFile = AudioSegment.from_file(path)
-
+    sample_rate = openedFile.frame_rate
+    print "::::: ** ORIGINAL ** :::: SAMPLE RATE: " + str(sample_rate) + " sp/s"
     needsSlice = False
     fifteenSeconds = kAUDIO_TIME_SLICE_WINDOW # SIKE HAHA
     soundFiles = []
@@ -76,7 +84,7 @@ def convertToL16(path):
             if interval != None:
                 convertFilePath = path + str(cursor) + "-L16convert.raw"
                 #"-b:a", "16000""-b:a", "16000"
-                interval.export(convertFilePath, format="s16le")
+                interval.export(convertFilePath, format="s16le"))
                 soundFiles.append(convertFilePath)
             cursor = cursor + fifteenSeconds
     else:
@@ -84,37 +92,7 @@ def convertToL16(path):
         convertFilePath = path+"-L16convert.raw"
         openedFile.export(convertFilePath, format="s16le")
         soundFiles = [convertFilePath]
-    return (soundFiles, needsSlice)
-
-def convertToM4a(path):
-    openedFile = AudioSegment.from_file(path)
-
-    needsSlice = False
-    fifteenSeconds = kAUDIO_TIME_SLICE_WINDOW # SIKE HAHA
-    soundFiles = []
-    cursor = 0
-    print "::::::::" + str(fifteenSeconds) + " AUDIO FILE DURATION: " + str(openedFile.duration_seconds)
-    if openedFile.duration_seconds >= kAUDIO_TIME_SLICE_WINDOW:
-        needsSlice = True
-        while cursor < openedFile.duration_seconds:
-            print ":::::::: PROCESSING SLICE: " + str(cursor) + "/" + str(openedFile.duration_seconds)
-            interval = None
-            if cursor+fifteenSeconds < openedFile.duration_seconds:
-                interval = openedFile[(cursor*1000):(cursor+fifteenSeconds)*1000]
-            else:
-                interval = openedFile[(cursor*1000):]
-            if interval != None:
-                convertFilePath = path + str(cursor) + "-m4adownsample.m4a"
-                #"-b:a", "16000""-b:a", "16000"
-                interval.export(convertFilePath, format="m4a", parameters=["-b:a", "44100"])
-                soundFiles.append(convertFilePath)
-            cursor = cursor + fifteenSeconds
-    else:
-        #"-b:a", "16000""-b:a", "16000"
-        convertFilePath = path+"-m4adownsample.m4q"
-        openedFile.export(convertFilePath, format="m4a", parameters=["-b:a", "44100"])
-        soundFiles = [convertFilePath]
-    return (soundFiles, needsSlice)
+    return (soundFiles, needsSlice, sample_rate)
 
 # [START def_transcribe_file]
 def transcribe_file(filepathURI, frame_id, user_id):
@@ -123,18 +101,18 @@ def transcribe_file(filepathURI, frame_id, user_id):
 
     # [START migration_async_request]
     resultsJSONList = []
-    (soundFiles, needsSlice) = convertToL16(speech_file)
+    (soundFiles, needsSlice, sample_rate) = convertToL16(speech_file)
     mark_time_offset_counter = 0
     for convertedFilePath in soundFiles:
         try:
             with io.open(convertedFilePath, 'rb') as audio_file:
                 content = audio_file.read()
 
-            print ":::::::::::::: AUDIO SLICE: " + str(len(content))
+            print ":::::::::::::: AUDIO SLICE: " + str(len(content)) + " @ " + str(sample_rate) + " sp/s"
             audio = types.RecognitionAudio(content=content)
             config = types.RecognitionConfig(
                 encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-                sample_rate_hertz=48000,
+                sample_rate_hertz=sample_rate,
                 language_code='en-US',
                 enable_word_time_offsets=True,
                 speech_contexts=[types.SpeechContext(phrases=["token", "hype", "coin", "hype coin", "wallet", "crypto"])])
@@ -212,3 +190,34 @@ def transcribe_gcs(gcs_uri):
         print('Transcript: {}'.format(alternative.transcript))
         print('Confidence: {}'.format(alternative.confidence))
 # [END def_transcribe_gcs]
+
+
+def convertToM4a(path):
+    openedFile = AudioSegment.from_file(path)
+
+    needsSlice = False
+    fifteenSeconds = kAUDIO_TIME_SLICE_WINDOW # SIKE HAHA
+    soundFiles = []
+    cursor = 0
+    print "::::::::" + str(fifteenSeconds) + " AUDIO FILE DURATION: " + str(openedFile.duration_seconds)
+    if openedFile.duration_seconds >= kAUDIO_TIME_SLICE_WINDOW:
+        needsSlice = True
+        while cursor < openedFile.duration_seconds:
+            print ":::::::: PROCESSING SLICE: " + str(cursor) + "/" + str(openedFile.duration_seconds)
+            interval = None
+            if cursor+fifteenSeconds < openedFile.duration_seconds:
+                interval = openedFile[(cursor*1000):(cursor+fifteenSeconds)*1000]
+            else:
+                interval = openedFile[(cursor*1000):]
+            if interval != None:
+                convertFilePath = path + str(cursor) + "-m4adownsample.m4a"
+                #"-b:a", "16000""-b:a", "16000"
+                interval.export(convertFilePath, format="m4a", parameters=["-b:a", "44100"])
+                soundFiles.append(convertFilePath)
+            cursor = cursor + fifteenSeconds
+    else:
+        #"-b:a", "16000""-b:a", "16000"
+        convertFilePath = path+"-m4adownsample.m4q"
+        openedFile.export(convertFilePath, format="m4a", parameters=["-b:a", "44100"])
+        soundFiles = [convertFilePath]
+    return (soundFiles, needsSlice)
