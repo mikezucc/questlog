@@ -47,8 +47,10 @@ from google.cloud.speech import types
 
 from jsondbimport import *
 
+INGESTION_DIR = os.getcwd().replace("\\","/") + "/ingestion/"
+
 def readStopWordList():
-    with open('en_stopwords.txt', 'r') as stopwords_file:
+    with open(INGESTION_DIR+'en_stopwords.txt', 'r') as stopwords_file:
         return stopwords_file.read().splitlines()
 
 kSTOPWORDS_LIST = readStopWordList()
