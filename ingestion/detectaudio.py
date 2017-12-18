@@ -76,13 +76,13 @@ def convertToL16(path):
             if interval != None:
                 convertFilePath = path + str(cursor) + "-L16convert.raw"
                 #"-b:a", "16000""-b:a", "16000"
-                interval.export(convertFilePath, format="s16le", parameters=["-b:a", "48000"])
+                interval.export(convertFilePath, format="s16le")
                 soundFiles.append(convertFilePath)
             cursor = cursor + fifteenSeconds
     else:
         #"-b:a", "16000""-b:a", "16000"
         convertFilePath = path+"-L16convert.raw"
-        openedFile.export(convertFilePath, format="s16le", parameters=["-b:a", "48000"])
+        openedFile.export(convertFilePath, format="s16le")
         soundFiles = [convertFilePath]
     return (soundFiles, needsSlice)
 
@@ -126,40 +126,43 @@ def transcribe_file(filepathURI, frame_id, user_id):
     (soundFiles, needsSlice) = convertToL16(speech_file)
     mark_time_offset_counter = 0
     for convertedFilePath in soundFiles:
-        with io.open(convertedFilePath, 'rb') as audio_file:
-            content = audio_file.read()
+        try:
+            with io.open(convertedFilePath, 'rb') as audio_file:
+                content = audio_file.read()
 
-        print ":::::::::::::: AUDIO SLICE: " + str(len(content))
-        audio = types.RecognitionAudio(content=content)
-        config = types.RecognitionConfig(
-            encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=48000,
-            language_code='en-US',
-            enable_word_time_offsets=True,
-            speech_contexts=[types.SpeechContext(phrases=["token", "hype", "coin", "hype coin", "wallet", "crypto"])])
+            print ":::::::::::::: AUDIO SLICE: " + str(len(content))
+            audio = types.RecognitionAudio(content=content)
+            config = types.RecognitionConfig(
+                encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
+                sample_rate_hertz=48000,
+                language_code='en-US',
+                enable_word_time_offsets=True,
+                speech_contexts=[types.SpeechContext(phrases=["token", "hype", "coin", "hype coin", "wallet", "crypto"])])
 
-        # [START migration_async_response]
-        operation = client.long_running_recognize(config, audio)
-        # [END migration_async_request]
+            # [START migration_async_response]
+            operation = client.long_running_recognize(config, audio)
+            # [END migration_async_request]
 
-        print('Waiting for operation to complete...')
-        result = operation.result(timeout=1000)
+            print('Waiting for operation to complete...')
+            result = operation.result(timeout=1000)
 
-        for res in result.results:
-            phrasonJSON = []
-            for alternative in res.alternatives:
-                word_marks = []
-                for word_info in alternative.words:
-                    start_time_DB_format = "{}".format(mark_time_offset_counter+word_info.start_time.seconds)
-                    word_mark = {"word":word_info.word, "start":start_time_DB_format}
-                    word_marks.append(word_mark)
-                    storeToTermMapSQL(word_info.word, start_time_DB_format, frame_id, user_id)
-                scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
-                phrasonJSON.append(scopeJSON)
-                print('Transcript: {}'.format(alternative.transcript))
-                print('Confidence: {}'.format(alternative.confidence))
-            resultsJSONList.append(phrasonJSON)
-        mark_time_offset_counter = mark_time_offset_counter + kAUDIO_TIME_SLICE_WINDOW
+            for res in result.results:
+                phrasonJSON = []
+                for alternative in res.alternatives:
+                    word_marks = []
+                    for word_info in alternative.words:
+                        start_time_DB_format = "{}".format(mark_time_offset_counter+word_info.start_time.seconds)
+                        word_mark = {"word":word_info.word, "start":start_time_DB_format}
+                        word_marks.append(word_mark)
+                        storeToTermMapSQL(word_info.word, start_time_DB_format, frame_id, user_id)
+                    scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
+                    phrasonJSON.append(scopeJSON)
+                    print('Transcript: {}'.format(alternative.transcript))
+                    print('Confidence: {}'.format(alternative.confidence))
+                resultsJSONList.append(phrasonJSON)
+            mark_time_offset_counter = mark_time_offset_counter + kAUDIO_TIME_SLICE_WINDOW
+        except:
+            print "GOOGLE TOOK A SHIT"
 
     audioJSON = {"audio":resultsJSONList}
     spitJSONAPIResulttoMDB(audioJSON, "audio_speech_google", frame_id, user_id)
