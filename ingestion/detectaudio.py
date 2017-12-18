@@ -90,7 +90,7 @@ def convertToL16(path):
             if interval != None:
                 convertFilePath = path + str(cursor) + "-L16convert.raw"
                 #"-b:a", "16000""-b:a", "16000"
-                interval.export(convertFilePath, format="s16le"))
+                interval.export(convertFilePath, format="s16le")
                 soundFiles.append(convertFilePath)
             cursor = cursor + fifteenSeconds
     else:
