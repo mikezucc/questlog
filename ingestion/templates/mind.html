@@ -3,8 +3,8 @@
 </head>
 {% if authed %}
 <form id="webIngest" method="POST" enctype="multipart/form-data" onsubmit="e.preventDefault(); return false;">
-  <input type="file" name="raw" multiple >
-  <button name="upload">Upload</button>
+  <input type="file" id="uploadinput" name="raw" multiple >
+  <button name="upload" id="upload">Upload</button>
   {% csrf_token %}
 </form>
 <h1>{{statuscode}}</h1>
@@ -98,6 +98,7 @@
     }
 
     document.getElementsByName('upload')[0].addEventListener('click', function(e) {
+        e.disabled = true;
         // var files = document.getElementsByName('raw')[0].files[0];
         // var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
         // var fd = new FormData();
@@ -113,6 +114,8 @@
         });
         xhr.addEventListener('load', function(e) {
             console.log('xhr upload complete', e, this.responseText);
+            document.getElementsByName('upload')[0].enabled = true;
+            // document.getElementById('uploadinput').value = '';
             // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
         });
         xhr.open('POST', '{{domain}}/ingest/{{username}}/', true);

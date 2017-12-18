@@ -51,6 +51,8 @@ UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 
 textFileTypes = ["json","txt", "ascii", "text"]
 
+DOMAIN_ENDPOINT = 'http://67.169.94.129:3000'
+
 # fucking just take the int dude
 @csrf_exempt
 def downlinkFrameData(request, frameid, filename):
@@ -83,19 +85,22 @@ def loginPage(request):
 def loginRequestExempt(request):
     try:
         inputUsername = request.POST['username']
+    except:
+        return HttpResponse(status=400)
+    try:
         inputPassword = request.POST['password']
     except:
-        return HttpResponse(code=400)
+        return HttpResponse(status=400)
     if inputPassword == None:
-        return HttpResponse(code=400)
+        return HttpResponse(status=400)
     users = Mind.objects.filter(username=inputUsername)
     if len(users) == 0:
         newUser = Mind.objects.create(username=inputUsername, password=inputPassword, profile_picture="[]")
         newUser.save()
     elif users[0].password != inputPassword:
-        return HttpResponse(code=401)
+        return HttpResponse(status=401)
     request.session['username'] = inputUsername
-    return HttpResponse(code=200)
+    return HttpResponse(status=200)
 
 def loginRequest(request):
     try:
@@ -139,20 +144,32 @@ def mindPage(request, usernameInput):
     if currentUser != usernameInput:
         authed = False
     framesMetadataList = framesOfUsername(usernameInput)
-    return render(request, MINDPAGETEMPLATE, {'domain': 'http://54.183.237.220:3000', 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
+    return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
 
 
 @csrf_exempt
 def mindPageAPIV2(request, usernameInput):
     if usernameInput == None:
-        return HttpResponse(code=403)
+        return HttpResponse(status=403)
     framesMetadataList = framesOfUsername(usernameInput)
     return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
+
+@csrf_exempt
+def termsPageAPIV1(request, usernameInput):
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return HttpResponse(status=401) # differing codes reveal to blackbox testing
+    termSetEntries = TermSet.objects.filter(user_parent=possibleMind.id).order_by('-createdat')
+    result = []
+    for termSetEntry in termSetEntries:
+        termDict = termSetEntry.toDictionary()
+        result.append(termDict)
+    return JsonResponse({"response":result,"secret_message":"suck a dick brody"})
 
 def framesOfUsername(usernameInput):
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:
-        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+        return HttpResponse(status=401) # differing codes reveal to blackbox testing
     possibleFrames = Frame.objects.filter(owner=possibleMind).order_by('-createdat')
     if possibleFrames == None:
         print usernameInput + " HAS NO FRAMES"
@@ -187,16 +204,16 @@ def mindPageAPIPOST(request):
         usernameInput = request.POST['username']
     except:
         print "missing username"
-        return HttpResponse(code=403)
+        return HttpResponse(status=403)
     return mindPageAPI(request, usernameInput)
 
 @csrf_exempt
 def mindPageAPI(request, usernameInput):
     if usernameInput == None:
-        return HttpResponse(code=403)
+        return HttpResponse(status=403)
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:
-        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+        return HttpResponse(status=401) # differing codes reveal to blackbox testing
     possibleFrames = Frame.objects.filter(owner=possibleMind).order_by("-createdat")
     if possibleFrames == None:
         return JsonResponse(json.dumps([])) # ;mao Im a god
@@ -234,10 +251,10 @@ def mindPageAPI(request, usernameInput):
 @csrf_exempt
 def mindPageAPILongFormSET(request, usernameInput):
     if usernameInput == None:
-        return HttpResponse(code=403)
+        return HttpResponse(status=403)
     possibleMind = Mind.objects.get(username=usernameInput)
     if possibleMind == None:
-        return HttpResponse(code=401) # differing codes reveal to blackbox testing
+        return HttpResponse(status=401) # differing codes reveal to blackbox testing
     possibleFrames = Frame.objects.filter(owner=possibleMind).order_by('-createdat')
     if possibleFrames == None:
         print usernameInput + " HAS NO FRAMES"

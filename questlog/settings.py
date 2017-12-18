@@ -25,7 +25,7 @@ SECRET_KEY = 'druzy#r=_00uwgcqr&gnzrv*nx15o3dkh^dn4#$u-0(#1^db+8'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.163', 'localhost', '67.169.94.129', '192.168.1.186', '172.20.10.2', '54.193.74.115', '172.31.11.124', '67.169.94.129', '54.183.237.220']
+ALLOWED_HOSTS = ['192.168.1.163', 'localhost', '67.169.94.129', '192.168.1.186', '172.20.10.2', '54.193.74.115', '172.31.11.124', '67.169.94.129', '54.183.237.220', '*']
 
 # Application definition
 
@@ -75,8 +75,12 @@ WSGI_APPLICATION = 'questlog.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'questlog',
+        'USER': 'root',
+        'PASSWORD': 'Tunein123',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 
