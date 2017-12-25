@@ -71,7 +71,10 @@ def runGoogleSpeechSuite(frameDictionary, frame_id, user_id):
 # contains the path to the converted file
 # return (convertFilePath, needsSlice, sliceCount)
 #
-def convertToL16(path):
+def convertToL16(path, frameid):
+    curdirlist = path.split("/")
+    curdirlist.pop()
+    curdir = "".join(curdirlist) + "/"
     openedFile = AudioSegment.from_file(path)
     sample_rate = openedFile.frame_rate
     print "::::: ** ORIGINAL ** :::: SAMPLE RATE: " + str(sample_rate) + " sp/s"
@@ -91,8 +94,10 @@ def convertToL16(path):
                 interval = openedFile[(cursor*1000):]
             if interval != None:
                 convertFilePath = path + str(cursor) + "-L16convert.raw"
+                convertFilePathM4A = curdir + "session" + str(frameid) + "-part" + str(cursor) + ".m4a"
                 #"-b:a", "16000""-b:a", "16000"
                 interval.export(convertFilePath, format="s16le")
+                interval.export(convertFilePathM4A, format="m4a")
                 soundFiles.append(convertFilePath)
             cursor = cursor + fifteenSeconds
     else:

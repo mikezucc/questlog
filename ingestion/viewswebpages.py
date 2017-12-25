@@ -75,7 +75,31 @@ def downlinkFrameData(request, frameid, filename):
                 elif approx_file_type == "sound":
                     content_type="audio/" + determineSimpleFormat(foldername+fil) + ";"
                 return FileResponse(open(foldername + fil, 'rb'),content_type=content_type)
-    return HttpResponse(status=500)
+    return HttpResponse(status=404)
+
+@csrf_exempt
+def downlinkFrameSliceData(request, frameid, sessionid):
+    if frameid == None:
+        return HttpResponse(status=400)
+    possibleFrames = Frame.objects.filter(id=frameid)
+    if possibleFrames == None:
+        return HttpResponse(status=401)
+    # is there a way to make this recursive? so its higher than 2
+    filename = "session"+str(frameid)+"-part"+str(sessionid)+".m4a"
+    for frame in possibleFrames:
+        foldername = frame.foldername
+        files = filesInFrame(foldername)
+        filesInFrameList = []
+        for fil in files:
+            if fil == filename:
+                approx_file_type = determineSimpleType(foldername+fil)
+                content_type = ""
+                if approx_file_type == "image":
+                    content_type="image/" + determineSimpleFormat(foldername+fil) + ";"
+                elif approx_file_type == "sound":
+                    content_type="audio/" + determineSimpleFormat(foldername+fil) + ";"
+                return FileResponse(open(foldername + fil, 'rb'),content_type=content_type)
+    return HttpResponse(status=404)
 
 def loginPage(request):
     request.session['username'] = ""
@@ -193,7 +217,7 @@ def framesOfUsername(usernameInput):
             continue
         frame_id = frame.id
         frameResults = vomitJSONAPIResultstoAPI(frame_id)
-        finalRes = {"main_file_metadata":main_file_metadata, "parsed_info":frameResults, 'frame_id':frame.id}
+        finalRes = {"main_file_metadata":main_file_metadata, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
         framesMetadataList.append(finalRes)
     return framesMetadataList
 

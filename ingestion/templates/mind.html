@@ -14,6 +14,8 @@
 <hr>
 <button id="processtrigger">process</button>
 <button id="burnnotice">burn notice</button>
+{% else %}
+<a href="/">Login</a>
 {% endif %}
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
@@ -171,6 +173,12 @@ Your browser does not support the audio tag.
       {% for conversantres in speechres %}
         {% if forloop.counter0 < 3 %}
         <p><a>{{conversantres.transcript}}</a> </p>
+        {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
+          <audio controls>
+            <source src="{{domain}}{{frame.slice_downlink_endpoint}}/{{frame.id}}/{{counter0}}/">
+      Your browser does not support the audio tag.
+          </audio>
+        {% endif %}
         {% for word in conversantres.words %}
         <a>{{word.word}} - {{word.start}}</a>
         {% endfor %}
