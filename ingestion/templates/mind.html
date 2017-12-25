@@ -130,6 +130,12 @@
 {% for frame in frames %}
 <p><a>{{frame.frame_id}}</a> - <a href="/inspect/{{frame.id}}/">{{frame.main_file_metadata.createdat_string}}</a>
   <a>frame.metadata.content:</a>
+  {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
+    <audio controls>
+      <source src="{{domain}}{{frame.main_file_metadata.downlink_endpoint}}">
+Your browser does not support the audio tag.
+    </audio>
+  {% endif %}
   <p>
   <a style="padding-left:50px;" id="expand('{{frame.frame_id}}', '{{frame.main_file_metadata.filename}}')">{{frame.main_file_metadata.filename}}</a> - <a href="/filter/?type={{frame.main_file_metadata.simpletype}}">{{frame.main_file_metadata.simpletype}}</a>
   <p>
@@ -165,6 +171,9 @@
       {% for conversantres in speechres %}
         {% if forloop.counter0 < 3 %}
         <p><a>{{conversantres.transcript}}</a> </p>
+        {% for word in conversantres.words %}
+        <a>{{word.word}} - {{word.start}}</a>
+        {% endfor %}
         {% endif %}
         {% endfor %}
     {% endfor %}
@@ -173,11 +182,6 @@
     <a>
   {% if frame.main_file_metadata.metadata.simpletype == "image" %}
     <img src="{{domain}}{{frame.main_file_metadata.downlink_endpoint}}" style="width: 400px; height:auto;" />
-  {% elif frame.main_file_metadata.metadata.simpletype == "sound" %}
-    <audio controls>
-      <source src="{{domain}}{{frame.main_file_metadata.downlink_endpoint}}">
-Your browser does not support the audio tag.
-    </audio>
   {% endif %}
   </p>
   <br>

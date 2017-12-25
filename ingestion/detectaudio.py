@@ -140,7 +140,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
                         if word_info.word in kSTOPWORDS_LIST:
                             continue
                         start_time_DB_format = "{}".format(mark_time_offset_counter+word_info.start_time.seconds)
-                        word_mark = {"word":word_info.word, "start":start_time_DB_format}
+                        word_mark = {"word":word_info.word, "start":start_time_DB_format, "frameid":frame_id, "userid":user_id}
                         word_marks.append(word_mark)
                         storeToTermMapSQL(word_info.word, start_time_DB_format, frame_id, user_id)
                     scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}

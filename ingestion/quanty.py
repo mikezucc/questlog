@@ -128,15 +128,20 @@ def startFileProcessingPipeline(frameDictionary):
 
         splitFileType = fileTypeMagic.split(',')
         print splitFileType
-        slugFileType = splitFileType[0].split(' ')[0].lower()
+        slugFileType = splitFileType[0].split(' ')[0].lower().strip()
+        try:
+            slugSecondaryType = splitFileType[1].split(' ')[1].lower().strip()
+        except:
+            slugSecondaryType = ""
         print slugFileType
+        print slugSecondaryType
 
         saveFileMetaInfo(fileTypeMagic)
 
         try:
-            print "checking " + slugFileType + " against "
+            print "checking " + slugFileType +  ", " + slugSecondaryType +" against "
             print imageFileTypes
-            if imageFileTypes.index(slugFileType) != None:
+            if slugFileType in imageFileTypes or slugSecondaryType in imageFileTypes:
                 print "--------------------------------------------------------------------------"
                 print "*** queue VISION process for  " + filepathURI
                 try:
@@ -149,12 +154,12 @@ def startFileProcessingPipeline(frameDictionary):
             print "not an image"
 
         try:
-            if soundFileTypes.index(slugFileType):
+            if slugFileType in soundFileTypes or slugSecondaryType in soundFileTypes:
                 print "--------------------------------------------------------------------------"
                 print "*** queue AUDIO process for " + filepathURI
                 try:
                     processSoundFile(frameDictionary, frame_id, user_id)
-                    combSingleFrameForTerms(frame_id)
+                    # combSingleFrameForTerms(frame_id)
                     # importFrameToDatabase(frameDictionary, "audio")
                 except Exception as e:
                     print traceback.format_exc()
