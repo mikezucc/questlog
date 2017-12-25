@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^login/', ingestionPages.loginPage, name='loginPage'),
     url(r'^login-exempt/', ingestionPages.loginRequestExempt, name='loginRequestExempt'),
     url(r'^downlink/(?P<frameid>\w+)/(?P<filename>.*)/', ingestionPages.downlinkFrameData, name='downlinkFrameData'),
-    url(r'^slice-downlink/(?P<frameid>\w+)/(?P<frameid>\w+)/', ingestionPages.downlinkFrameSliceData, name='downlinkFrameSliceData'),
+    url(r'^slice-downlink/(?P<frameid>\w+)/(?P<sessionid>\w+)/', ingestionPages.downlinkFrameSliceData, name='downlinkFrameSliceData'),
     url(r'^$', ingestionPages.loginPage, name='rootpage'),#downlinkFrameData
 ]
 
