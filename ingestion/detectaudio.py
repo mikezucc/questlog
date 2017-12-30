@@ -121,7 +121,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
             with io.open(convertedFilePath, 'rb') as audio_file:
                 content = audio_file.read()
 
-            print ":::::::::::::: AUDIO SLICE: " + str(len(content)) + " @ " + str(sample_rate) + " sp/s"
+            print ":::::::::::::: AUDIO SLICE " + str(mark_time_offset_counter/(content/sample_rate)) +": " + str(len(content)) + " @ " + str(sample_rate) + " sp/s"
             audio = types.RecognitionAudio(content=content)
             config = types.RecognitionConfig(
                 encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
