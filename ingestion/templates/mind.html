@@ -176,11 +176,14 @@ Your browser does not support the audio tag.
       {% endif %}
       {% for conversantres in speechres %}
         {% if forloop.counter0 < 3 %}
-        <p><a>{{conversantres.transcript}}</a> </p>
-        <audio controls>
-          <source src="{{domain}}{{frame.slice_downlink_endpoint}}{{frame.frame_id}}/{{forloop.counter0}}/">
-    Your browser does not support the audio tag.
-        </audio>
+        {% for transcript in conversantres.transcript_arr %}
+        <p><a>{{transcript}}</a> </p>
+        {% endfor %}
+        {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
+          <audio controls>
+            <source src="{{domain}}{{frame.slice_downlink_endpoint}}{{frame.frame_id}}/{{forloop.counter0}}/">
+      Your browser does not support the audio tag.
+          </audio>
         <!--{% for word in conversantres.words %}
         <a>{{word.word}} - {{word.start}}</a>
         {% endfor %}-->

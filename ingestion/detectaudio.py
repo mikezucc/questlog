@@ -137,22 +137,23 @@ def transcribe_file(filepathURI, frame_id, user_id):
             print('Waiting for operation to complete...')
             result = operation.result(timeout=1000)
 
+            transcript_cat = ""
+            transcript_arr = []
+            word_mark_cat = []
             for res in result.results:
                 phrasonJSON = []
                 for alternative in res.alternatives:
-                    word_marks = []
                     for word_info in alternative.words:
                         if word_info.word.lower() in kSTOPWORDS_LIST:
                             continue
                         start_time_DB_format = "{}".format(mark_time_offset_counter+word_info.start_time.seconds)
                         word_mark = {"word":word_info.word, "start":start_time_DB_format, "frameid":frame_id, "userid":user_id}
-                        word_marks.append(word_mark)
+                        word_mark_cat.append(word_mark)
                         storeToTermMapSQL(word_info.word, start_time_DB_format, frame_id, user_id)
-                    scopeJSON = {"transcript":'{}'.format(alternative.transcript), "confidence":'{}'.format(alternative.confidence), "words":word_marks}
-                    phrasonJSON.append(scopeJSON)
-                    print('Transcript: {}'.format(alternative.transcript))
-                    print('Confidence: {}'.format(alternative.confidence))
-                resultsJSONList.append(phrasonJSON)
+                    transcript_cat = transcript_cat + '{}'.format(alternative.transcript) + "\n"
+                    transcript_arr.append(transcript)
+            scopeJSON = {"transcript":transcript_cat, "transcript_arr":transcript_cat_arr, "confidence":"100", "words":word_mark_cat}
+            resultsJSONList.append(scopeJSON)
             mark_time_offset_counter = mark_time_offset_counter + kAUDIO_TIME_SLICE_WINDOW
         except:
             print "GOOGLE TOOK A SHIT"
