@@ -151,7 +151,7 @@ def transcribe_file(filepathURI, frame_id, user_id):
                         word_mark_cat.append(word_mark)
                         storeToTermMapSQL(word_info.word, start_time_DB_format, frame_id, user_id)
                     transcript_cat = transcript_cat + '{}'.format(alternative.transcript) + "\n"
-                    transcript_arr.append(transcript)
+                    transcript_arr.append(alternative.transcript)
             scopeJSON = {"transcript":transcript_cat, "transcript_arr":transcript_arr, "confidence":"100", "words":word_mark_cat}
             resultsJSONList.append(scopeJSON)
             mark_time_offset_counter = mark_time_offset_counter + kAUDIO_TIME_SLICE_WINDOW
