@@ -113,10 +113,14 @@
             var done = e.position || e.loaded
             var total = e.totalSize || e.total;
             console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+            var node = document.createTextNode('' + Math.round(done/total*100) + '%');
+            document.getElementsByName('upload')[0].appendChild(node);       // Create a text node
         });
         xhr.addEventListener('load', function(e) {
             console.log('xhr upload complete', e, this.responseText);
             document.getElementsByName('upload')[0].enabled = true;
+            var node = document.createTextNode("FINISHED");
+            document.getElementsByName('upload')[0].appendChild(node);
             // document.getElementById('uploadinput').value = '';
             // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
         });
@@ -172,13 +176,14 @@ Your browser does not support the audio tag.
       {% endif %}
       {% for conversantres in speechres %}
         {% if forloop.counter0 < 3 %}
-        <p><a>{{conversantres.transcript}}</a> </p>
+        {% for transcript in conversantres.transcript_arr %}
+        <p><a>{{transcript}}</a> </p>
+        {% endfor %}
         {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
           <audio controls>
-            <source src="{{domain}}{{frame.slice_downlink_endpoint}}/{{frame.id}}/{{counter0}}/">
+            <source src="{{domain}}{{frame.slice_downlink_endpoint}}{{frame.frame_id}}/{{forloop.counter0}}/">
       Your browser does not support the audio tag.
           </audio>
-        {% endif %}
         <!--{% for word in conversantres.words %}
         <a>{{word.word}} - {{word.start}}</a>
         {% endfor %}-->
