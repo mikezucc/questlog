@@ -45,8 +45,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 CURRENTLOCATION = BASE_DIR + "/ingestion/templates/" # yeah whatever
 #CURRENTLOCATION = os.getcwd().replace("\\","/")  + "/dojo/templates/"
 INGESTIONPAGETEMPLATE = CURRENTLOCATION + 'ingestionmain.html'
-LOGINTEMPLATE = CURRENTLOCATION + 'login.html'
-MINDPAGETEMPLATE = CURRENTLOCATION + 'mind.html'
+LOGINTEMPLATE = CURRENTLOCATION + 'signin.html'
+MINDPAGETEMPLATE = CURRENTLOCATION + 'dashboard.html'
 UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 
 textFileTypes = ["json","txt", "ascii", "text"]
