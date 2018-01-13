@@ -95,7 +95,7 @@
       var name = "memes";
       var xhr = new XMLHttpRequest();
       (xhr.upload || xhr).addEventListener('progress', function(e) {
-          var done = e.position || e.loaded
+          var done = e.position || e.loaded;
           var total = e.totalSize || e.total;
           console.log('xhr progress: ' + Math.round(done/total*100) + '%');
           // var node = document.createTextNode('' + Math.round(done/total*100) + '%');
@@ -109,6 +109,34 @@
           // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
       });
       xhr.open('POST', '{{domain}}/ingest/{{username}}/', true);
+      // xhr.setRequestHeader("X-CSRFToken", '{{csrf_token}}');
+      xhr.send(fd);
+  };
+  function contextCreateAction () {
+      document.getElementById('contextCreateButton').disabled = true;
+      // var files = document.getElementsByName('raw')[0].files[0];
+      // var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+      // var fd = new FormData();
+      var fd = new FormData(document.getElementById("contextCreateForm"));
+      console.log(fd);
+      // fd.append("memes", files);
+      var name = "memes";
+      var xhr = new XMLHttpRequest();
+      (xhr.upload || xhr).addEventListener('progress', function(e) {
+          var done = e.position || e.loaded;
+          var total = e.totalSize || e.total;
+          console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+          // var node = document.createTextNode('' + Math.round(done/total*100) + '%');
+          document.getElementById('contextCreateButton').value= '' + Math.round(done/total*100) + '%';     // Create a text node
+      });
+      xhr.addEventListener('load', function(e) {
+          console.log('xhr upload complete', e, this.responseText);
+          document.getElementById('contextCreateButton').enabled = true;
+          document.getElementById('contextCreateButton').value= "Finished!";
+          // document.getElementById('uploadinput').value = '';
+          // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
+      });
+      xhr.open('POST', '{{domain}}/create-context/', true);
       // xhr.setRequestHeader("X-CSRFToken", '{{csrf_token}}');
       xhr.send(fd);
   };
@@ -204,13 +232,16 @@
             </div>-->
             <div class="col-6 col-sm-3 placeholder">
               <img src="https://cdn.iconscout.com/public/images/icon/premium/png-512/give-new-idea-light-bulb-creative-37c74d337ffb3af1-512x512.png" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-              <div class="form-group" id="loginformid" action="/create-context/" method="post" enctype="multipart/form-data">
+
+              <form id="contextCreateForm" method="POST" enctype="multipart/form-data" onsubmit="return false;">
+                <div class="form-group" id="loginformid" action="/create-context/" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <label for="createContextField">Define New Context</label>
                 <small id="contextNameHelp" class="form-text text-muted">Provide a context for grouping your work</small>
-                <input type="text" class="form-control" id="createContextField" aria-describedby="contextNameHelp" placeholder="i.e. (AirBnB For Recreation)">
-                <button type="submit" class="btn btn-secondary">Create</button>
+                <input name="context" type="text" class="form-control" id="createContextField" aria-describedby="contextNameHelp" placeholder="i.e. (AirBnB For Recreation)">
+                <button id="contextCreateButton" onclick="contextCreateAction();" class="btn btn-secondary">Create</button>
               </div>
+            </form>
             </div>
           </section>
 
@@ -294,7 +325,32 @@
           });
         }
     </script>-->
-    <script>
+    <script>t
+    function loadContexts(username) {
+      console.log("load frames");
+      var fd = new FormData(document.getElementById("tokenSubmit"));
+      $.ajax({
+        url: "{{domain}}/api/context/{{username}}/",
+        type: "GET",
+        processData: true,
+        cache: false
+      }).done(function( data ) {
+          console.log( data );
+          var response = data["response"];
+          // for frame in response {
+          //   $("#framesList").append($("
+          //   <tr>
+          //     <td>" + frame.frame_id.toString() + "</td>
+          //     <td>Lorem</td>
+          //     <td>ipsum</td>
+          //     <td>dolor</td>
+          //     {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
+          //     <td><a href="{domain}}{{frame.main_file_metadata.downlink_endpoint}}">Download</td>
+          //     {% endif %}
+          //   </tr>");
+          // }
+      });
+    }
     function loadFrames(username) {
       console.log("load frames");
       var fd = new FormData(document.getElementById("tokenSubmit"));
@@ -306,22 +362,23 @@
       }).done(function( data ) {
           console.log( data );
           var response = data["response"];
-          for frame in response {
-            $("#framesList").append($("
-            <tr>
-              <td>" + frame.frame_id.toString() + "</td>
-              <td>Lorem</td>
-              <td>ipsum</td>
-              <td>dolor</td>
-              {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
-              <td><a href="{domain}}{{frame.main_file_metadata.downlink_endpoint}}">Download</td>
-              {% endif %}
-            </tr>");
-          }
+          // for frame in response {
+          //   $("#framesList").append($("
+          //   <tr>
+          //     <td>" + frame.frame_id.toString() + "</td>
+          //     <td>Lorem</td>
+          //     <td>ipsum</td>
+          //     <td>dolor</td>
+          //     {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
+          //     <td><a href="{domain}}{{frame.main_file_metadata.downlink_endpoint}}">Download</td>
+          //     {% endif %}
+          //   </tr>");
+          // }
       });
     }
     window.onload = function(){
       console.log("hurrump");
+      loadContexts("{{username}}");
       loadFrames("{{username}}");
     }
     </script>

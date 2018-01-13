@@ -145,7 +145,8 @@ def loginRequest(request):
     if len(users) == 0:
         newUser = Mind.objects.create(email=inputEmail,username=username, password=inputPassword, profile_picture="[]")
         newUser.save()
-        newContext = Context.objects.create(text="Miscellaneous")
+        newContext = Context.objects.create(mind=newUser, text="Miscellaneous")
+        newContext.save()
     elif users[0].password != inputPassword:
         return render(request, LOGINTEMPLATE, {'inputCode':401})
     request.session['username'] = username
@@ -175,6 +176,7 @@ def mindPage(request, usernameInput):
     authed = True
     if currentUser != usernameInput:
         authed = False
+        return redirect('/login/')
     framesMetadataList = framesOfUsername(usernameInput)
     return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
 
@@ -189,6 +191,20 @@ def uploadPage(request):
     if possibleMind == None:
         return redirect('/login/')
     return render(request, UPLOADPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': '200', 'username':usernameInput})
+
+def createContext(request):
+    try:
+        currentUser = request.session['username']
+        context = request.POST["context"]
+    except:
+        print "shit lmao"
+        return HttpResponse(status=401)
+    possibleMind = Mind.objects.get(username=currentUser)
+    if possibleMind == None:
+        return HttpResponse(status=403)
+    newContext = Context.objects.create(mind=possibleMind, text=context)
+    newContext.save()
+    return HttpResponse(status=200)
 
 @csrf_exempt
 def framesPageAPI(request,usernameInput):

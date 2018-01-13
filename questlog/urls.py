@@ -24,6 +24,7 @@ from ingestion import quanty as quanty
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^ingest/(?P<usernameInput>\w+)/', ingestionAPI.ingestFiles, name='ingestFiles'),
+    url(r'^create-context/', ingestionAPI.createContext, name='createContext'),
     url(r'^process/(?P<usernameInput>\w+)/', quanty.processMind, name='processBOnk'),
     url(r'^mymind/', ingestionPages.mindPageCurrentUser, name='mindPageCurrentUser'),
     url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='mindPage'),
