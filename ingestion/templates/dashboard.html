@@ -10,6 +10,7 @@
     <title>Dashboard Template for Bootstrap</title>
 
     <!-- Bootstrap core CSS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/css/bootstrap.min.css" integrity="sha384-Zug+QiDoJOrZ5t4lssLdxGhVrurbmBWopoEl+M6BdEfwnCJZtKxi1KgxUyJq13dy" crossorigin="anonymous">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.3/js/bootstrap.min.js" integrity="sha384-a5N7Y/aK3qNeh15eJKGWxsqtnX/wWdSZSKp+81YjTmS15nvnvxKHuzaWwXHDli+4" crossorigin="anonymous"></script>
 
@@ -82,11 +83,44 @@
 
     </style>
   </head>
+  <script>
+  function runTheJewels () {
+      document.getElementById('addFrameButton').disabled = true;
+      // var files = document.getElementsByName('raw')[0].files[0];
+      // var token = document.getElementsByName('csrfmiddlewaretoken')[0].value;
+      // var fd = new FormData();
+      var fd = new FormData(document.getElementById("webIngest"));
+      console.log(fd);
+      // fd.append("memes", files);
+      var name = "memes";
+      var xhr = new XMLHttpRequest();
+      (xhr.upload || xhr).addEventListener('progress', function(e) {
+          var done = e.position || e.loaded
+          var total = e.totalSize || e.total;
+          console.log('xhr progress: ' + Math.round(done/total*100) + '%');
+          // var node = document.createTextNode('' + Math.round(done/total*100) + '%');
+          document.getElementById('addFrameButton').value= '' + Math.round(done/total*100) + '%';     // Create a text node
+      });
+      xhr.addEventListener('load', function(e) {
+          console.log('xhr upload complete', e, this.responseText);
+          document.getElementById('addFrameButton').enabled = true;
+          document.getElementById('addFrameButton').value= "Finished!";
+          // document.getElementById('uploadinput').value = '';
+          // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
+      });
+      xhr.open('POST', '{{domain}}/ingest/{{username}}/', true);
+      // xhr.setRequestHeader("X-CSRFToken", '{{csrf_token}}');
+      xhr.send(fd);
+  };
+  </script>
 
   <body>
+    <form id="tokenSubmit" display="none" method="POST" enctype="multipart/form-data" onsubmit="e.preventDefault(); return false;">
+      {% csrf_token %}
+    </form>
     <header>
       <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-        <a class="navbar-brand" href="#">Dashboard</a>
+        <a class="navbar-brand" href="#">Omen</a>
         <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -161,156 +195,82 @@
         </nav>
 
         <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
-          <h1>Dashboard</h1>
-
+          <h2>Contexts</h2>
           <section class="row text-center placeholders">
-            <div class="col-6 col-sm-3 placeholder">
+            <!--<div class="col-6 col-sm-3 placeholder">
               <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
               <h4>Label</h4>
               <div class="text-muted">Something else</div>
-            </div>
+            </div>-->
             <div class="col-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIABAADcgwAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
+              <img src="https://cdn.iconscout.com/public/images/icon/premium/png-512/give-new-idea-light-bulb-creative-37c74d337ffb3af1-512x512.png" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
+              <div class="form-group" id="loginformid" action="/create-context/" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="createContextField">Define New Context</label>
+                <small id="contextNameHelp" class="form-text text-muted">Provide a context for grouping your work</small>
+                <input type="text" class="form-control" id="createContextField" aria-describedby="contextNameHelp" placeholder="i.e. (AirBnB For Recreation)">
+                <button type="submit" class="btn btn-secondary">Create</button>
+              </div>
             </div>
           </section>
 
-          <h2>Section title</h2>
+          <h2>Information</h2>
+          <!-- Button trigger modal -->
+          <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#exampleModal">
+            Add Frame
+          </button>
+
+          <!-- Modal -->
+          <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+              <div class="modal-content">
+                <form id="webIngest" method="POST" enctype="multipart/form-data" onsubmit="return false;">
+                  {% csrf_token %}
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Add</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <div class="file-loading">
+                    <input id="input-b9" id="uploadInput" name="raw" type="file" multiple>
+                  </div>
+
+                  <input type="text" name="createFrameNotesField" class="form-control" id="createFrameNotesField" aria-describedby="contextNameHelp" placeholder="Notes">
+                </div>
+              </form>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button id="addFrameButton" onclick="runTheJewels();" type="button" class="btn btn-primary" title="Save">Save</button>
+              </div>
+              </div>
+            </div>
+          </div>
           <div class="table-responsive">
             <table class="table table-striped">
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Header</th>
-                  <th>Header</th>
-                  <th>Header</th>
-                  <th>Header</th>
+                  <th>Context</th>
+                  <th>Notes</th>
+                  <th>Preview</th>
+                  <th>Type</th>
+                  <th>Link</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="framesList">
+                <!--{% for frame in frames %}
                 <tr>
-                  <td>1,001</td>
+                  <td>{{frame.frame_id}}</td>
                   <td>Lorem</td>
                   <td>ipsum</td>
                   <td>dolor</td>
-                  <td>sit</td>
+                  {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
+                  <td><a href="{domain}}{{frame.main_file_metadata.downlink_endpoint}}">Download</td>
+                  {% endif %}
                 </tr>
-                <tr>
-                  <td>1,002</td>
-                  <td>amet</td>
-                  <td>consectetur</td>
-                  <td>adipiscing</td>
-                  <td>elit</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>Integer</td>
-                  <td>nec</td>
-                  <td>odio</td>
-                  <td>Praesent</td>
-                </tr>
-                <tr>
-                  <td>1,003</td>
-                  <td>libero</td>
-                  <td>Sed</td>
-                  <td>cursus</td>
-                  <td>ante</td>
-                </tr>
-                <tr>
-                  <td>1,004</td>
-                  <td>dapibus</td>
-                  <td>diam</td>
-                  <td>Sed</td>
-                  <td>nisi</td>
-                </tr>
-                <tr>
-                  <td>1,005</td>
-                  <td>Nulla</td>
-                  <td>quis</td>
-                  <td>sem</td>
-                  <td>at</td>
-                </tr>
-                <tr>
-                  <td>1,006</td>
-                  <td>nibh</td>
-                  <td>elementum</td>
-                  <td>imperdiet</td>
-                  <td>Duis</td>
-                </tr>
-                <tr>
-                  <td>1,007</td>
-                  <td>sagittis</td>
-                  <td>ipsum</td>
-                  <td>Praesent</td>
-                  <td>mauris</td>
-                </tr>
-                <tr>
-                  <td>1,008</td>
-                  <td>Fusce</td>
-                  <td>nec</td>
-                  <td>tellus</td>
-                  <td>sed</td>
-                </tr>
-                <tr>
-                  <td>1,009</td>
-                  <td>augue</td>
-                  <td>semper</td>
-                  <td>porta</td>
-                  <td>Mauris</td>
-                </tr>
-                <tr>
-                  <td>1,010</td>
-                  <td>massa</td>
-                  <td>Vestibulum</td>
-                  <td>lacinia</td>
-                  <td>arcu</td>
-                </tr>
-                <tr>
-                  <td>1,011</td>
-                  <td>eget</td>
-                  <td>nulla</td>
-                  <td>Class</td>
-                  <td>aptent</td>
-                </tr>
-                <tr>
-                  <td>1,012</td>
-                  <td>taciti</td>
-                  <td>sociosqu</td>
-                  <td>ad</td>
-                  <td>litora</td>
-                </tr>
-                <tr>
-                  <td>1,013</td>
-                  <td>torquent</td>
-                  <td>per</td>
-                  <td>conubia</td>
-                  <td>nostra</td>
-                </tr>
-                <tr>
-                  <td>1,014</td>
-                  <td>per</td>
-                  <td>inceptos</td>
-                  <td>himenaeos</td>
-                  <td>Curabitur</td>
-                </tr>
-                <tr>
-                  <td>1,015</td>
-                  <td>sodales</td>
-                  <td>ligula</td>
-                  <td>in</td>
-                  <td>libero</td>
-                </tr>
+                {% endfor %}-->
               </tbody>
             </table>
           </div>
@@ -321,8 +281,49 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="../../../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
+    <!--<script src="https://getbootstrap.com/assets/js/vendor/popper.min.js" crossorigin="anonymous"></script>-->
+    <!--<script>
+      window.onload = function() {
+          $("#input-b9").fileinput({
+              showPreview: false,
+              showUpload: false,
+              elErrorContainer: '#kartik-file-errors',
+              allowedFileExtensions: ["jpg", "png", "gif"]
+              //uploadUrl: '/site/file-upload-single'
+          });
+        }
+    </script>-->
+    <script>
+    function loadFrames(username) {
+      console.log("load frames");
+      var fd = new FormData(document.getElementById("tokenSubmit"));
+      $.ajax({
+        url: "{{domain}}/api/frames/{{username}}/",
+        type: "GET",
+        processData: true,
+        cache: false
+      }).done(function( data ) {
+          console.log( data );
+          var response = data["response"];
+          for frame in response {
+            $("#framesList").append($("
+            <tr>
+              <td>" + frame.frame_id.toString() + "</td>
+              <td>Lorem</td>
+              <td>ipsum</td>
+              <td>dolor</td>
+              {% if frame.main_file_metadata.metadata.simpletype == "sound" %}
+              <td><a href="{domain}}{{frame.main_file_metadata.downlink_endpoint}}">Download</td>
+              {% endif %}
+            </tr>");
+          }
+      });
+    }
+    window.onload = function(){
+      console.log("hurrump");
+      loadFrames("{{username}}");
+    }
+    </script>
   </body>
 </html>

@@ -80,6 +80,12 @@ def ingestFiles(request, usernameInput):
         return HttpResponse(status=403)
     mind = users[0]
 
+    try:
+        notes = request.POST['createFrameNotesField']
+    except:
+        notes = ""
+        print "well fuck"
+
     checkDirectoryForMind(mind)
     timestampstring = unicode(datetime.datetime.now())
     frameFolderName = UPLOAD_DIR_3 + mind.username + "/" + timestampstring + "/"
@@ -111,7 +117,7 @@ def ingestFiles(request, usernameInput):
                 print "handle_uploaded_file > 5 || finished writing " + filenameDirty
                 destination.seek(0)
                 fileTypeMagic = magic.from_buffer(destination.read(1024))
-        frameO = Frame.objects.create(owner=mind, foldername=frameFolderName, createdat=datetime.datetime.now(), createdat_string=timestampstring, main_file=filnem, type_complex=fileTypeMagic, type_simple=determineSimpleType(frameFolderName+filnem),format_simple=determineSimpleFormat(frameFolderName+filnem))
+        frameO = Frame.objects.create(owner=mind, notes=notes, foldername=frameFolderName, createdat=datetime.datetime.now(), createdat_string=timestampstring, main_file=filnem, type_complex=fileTypeMagic, type_simple=determineSimpleType(frameFolderName+filnem),format_simple=determineSimpleFormat(frameFolderName+filnem))
         # result = pool.apply_async(processFrame, [frameO.id]) # Evaluate "f(10)" asynchronously calling callback when finished
         processFrame(frameO.id) # lmfao u sodden bastard
         return HttpResponse(status=200)

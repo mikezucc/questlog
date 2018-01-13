@@ -6,15 +6,24 @@ from django.db import models
 # Create your models here.
 class Mind(models.Model):
     username = models.CharField(max_length=250)
+    email = models.CharField(max_length=250,default="")
     password = models.CharField(max_length=250)
     profile_picture = models.CharField(max_length=250)
     datejoined = models.DateTimeField(auto_now_add=True)
+    metadata = {}
+
+class Context(models.Model):
+    mind = models.ForeignKey(Mind, on_delete=models.CASCADE)
+    text = models.CharField(max_length=250,default="")
+    createdat = models.DateTimeField(auto_now_add=True)
     metadata = {}
 
 # this implies that there is a quantization to time domain
 class Frame(models.Model):
     owner = models.ForeignKey(Mind, on_delete=models.CASCADE)
     foldername = models.CharField(max_length=200)
+    context = models.ForeignKey(Context, on_delete=models.CASCADE)
+    notes = models.CharField(max_length=2000)
     main_file = models.CharField(max_length=300, default="")
     createdat = models.DateTimeField(auto_now_add=True)
     createdat_string = models.CharField(max_length=300, default="")

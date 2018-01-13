@@ -78,14 +78,14 @@ def downlinkFrameData(request, frameid, filename):
     return HttpResponse(status=404)
 
 @csrf_exempt
-def downlinkFrameSliceData(request, frameid, sessionid):
+def downlinkFrameSliceData(request, frameid, sliceid):
     if frameid == None:
         return HttpResponse(status=400)
     possibleFrames = Frame.objects.filter(id=frameid)
     if possibleFrames == None:
         return HttpResponse(status=401)
     # is there a way to make this recursive? so its higher than 2
-    filename = "session"+str(frameid)+"-part"+str(sessionid)+".m4a"
+    filename = "session"+str(frameid)+"-part"+str(sliceid)+".m4a"
     for frame in possibleFrames:
         foldername = frame.foldername
         files = filesInFrame(foldername)
@@ -108,7 +108,9 @@ def loginPage(request):
 @csrf_exempt
 def loginRequestExempt(request):
     try:
-        inputUsername = request.POST['username']
+        inputEmail = request.POST['email']
+        components = inputEmail.split('@')
+        username = components[0]
     except:
         return HttpResponse(status=400)
     try:
@@ -117,10 +119,12 @@ def loginRequestExempt(request):
         return HttpResponse(status=400)
     if inputPassword == None:
         return HttpResponse(status=400)
-    users = Mind.objects.filter(username=inputUsername)
+    users = Mind.objects.filter(email=inputEmail)
     if len(users) == 0:
-        newUser = Mind.objects.create(username=inputUsername, password=inputPassword, profile_picture="[]")
+        newUser = Mind.objects.create(email=inputEmail,username=username, password=inputPassword, profile_picture="[]")
         newUser.save()
+        newContext = Context.objects.create(text="Miscellaneous",mind=newUser)
+        newContext.save()
     elif users[0].password != inputPassword:
         return HttpResponse(status=401)
     request.session['username'] = inputUsername
@@ -128,20 +132,24 @@ def loginRequestExempt(request):
 
 def loginRequest(request):
     try:
-        inputUsername = request.POST['username']
-        inputPassword = request.POST['password']
+        inputEmail = request.POST['email']
+        components = inputEmail.split('@')
+        username = components[0]
     except:
         return render(request, LOGINTEMPLATE, {'inputCode':400})
-    if inputPassword == None:
-        return render(request, LOGINTEMPLATE, {'inputCode':400})
-    users = Mind.objects.filter(username=inputUsername)
+    try:
+        inputPassword = request.POST['password']
+    except:
+        return HttpResponse(status=400)
+    users = Mind.objects.filter(username=username)
     if len(users) == 0:
-        newUser = Mind.objects.create(username=inputUsername, password=inputPassword, profile_picture="[]")
+        newUser = Mind.objects.create(email=inputEmail,username=username, password=inputPassword, profile_picture="[]")
         newUser.save()
+        newContext = Context.objects.create(text="Miscellaneous")
     elif users[0].password != inputPassword:
         return render(request, LOGINTEMPLATE, {'inputCode':401})
-    request.session['username'] = inputUsername
-    return redirect('/mind/'+inputUsername+'/')
+    request.session['username'] = username
+    return redirect('/mind/'+username+'/')
 
 def ingestionPage(request):
     return render(request, INGESTIONPAGETEMPLATE, {'statuscode':'ok'})
@@ -170,6 +178,24 @@ def mindPage(request, usernameInput):
     framesMetadataList = framesOfUsername(usernameInput)
     return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
 
+def uploadPage(request):
+    currentUser = ""
+    try:
+        currentUser = request.session['username']
+    except:
+        print "shit lmao"
+        return redirect('/login/')
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return redirect('/login/')
+    return render(request, UPLOADPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': '200', 'username':usernameInput})
+
+@csrf_exempt
+def framesPageAPI(request,usernameInput):
+    if usernameInput == None:
+        return HttpResponse(status=403)
+    framesMetadataList = framesOfUsername(usernameInput)
+    return JsonResponse({"response":framesMetadataList,"secret_message":"suck a dick brody"})
 
 @csrf_exempt
 def mindPageAPIV2(request, usernameInput):
@@ -217,7 +243,7 @@ def framesOfUsername(usernameInput):
             continue
         frame_id = frame.id
         frameResults = vomitJSONAPIResultstoAPI(frame_id)
-        finalRes = {"main_file_metadata":main_file_metadata, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
+        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
         framesMetadataList.append(finalRes)
     return framesMetadataList
 

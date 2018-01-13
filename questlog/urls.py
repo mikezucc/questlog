@@ -29,12 +29,13 @@ urlpatterns = [
     url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='mindPage'),
     url(r'^api/mind-post/', ingestionPages.mindPageAPIPOST, name='mindPageAPIPOST'),
     url(r'^api/mind/(?P<usernameInput>\w+)/', ingestionPages.mindPageAPIV2, name='mindPageAPIV2'),
+    url(r'^api/frames/(?P<usernameInput>\w+)/', ingestionPages.framesPageAPI, name='framesPageAPI'),
     url(r'^auth/', ingestionPages.loginRequest, name='loginRequest'),
     url(r'^burn/notice/mind/(?P<usernameInput>\w+)/', ingestionAPI.burnNotice, name='burnNotice'),
     url(r'^login/', ingestionPages.loginPage, name='loginPage'),
     url(r'^login-exempt/', ingestionPages.loginRequestExempt, name='loginRequestExempt'),
     url(r'^downlink/(?P<frameid>\w+)/(?P<filename>.*)/', ingestionPages.downlinkFrameData, name='downlinkFrameData'),
-    url(r'^slice-downlink/(?P<frameid>\w+)/(?P<sessionid>\w+)/', ingestionPages.downlinkFrameSliceData, name='downlinkFrameSliceData'),
+    url(r'^slice-downlink/(?P<frameid>\w+)/(?P<sliceid>\w+)/', ingestionPages.downlinkFrameSliceData, name='downlinkFrameSliceData'),
     url(r'^$', ingestionPages.loginPage, name='rootpage'),#downlinkFrameData
 ]
 
