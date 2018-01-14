@@ -194,7 +194,7 @@
             </li>
           </ul>
 
-          <ul class="nav nav-pills flex-column">
+          <ul id="contextList" class="nav nav-pills flex-column">
             <li class="nav-item">
               <a class="nav-link" href="#">Nav item</a>
             </li>
@@ -223,13 +223,13 @@
         </nav>
 
         <main role="main" class="col-sm-9 ml-sm-auto col-md-10 pt-3">
-          <h2>Contexts</h2>
-          <section class="row text-center placeholders">
-            <!--<div class="col-6 col-sm-3 placeholder">
+          <!--<h2>Contexts</h2>
+          <section id="contextList" class="row text-center placeholders">
+            <div class="col-6 col-sm-3 placeholder">
               <img src="data:image/gif;base64,R0lGODlhAQABAIABAAJ12AAAACwAAAAAAQABAAACAkQBADs=" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
               <h4>Label</h4>
               <div class="text-muted">Something else</div>
-            </div>-->
+            </div>
             <div class="col-6 col-sm-3 placeholder">
               <img src="https://cdn.iconscout.com/public/images/icon/premium/png-512/give-new-idea-light-bulb-creative-37c74d337ffb3af1-512x512.png" width="200" height="200" class="img-fluid rounded-circle" alt="Generic placeholder thumbnail">
 
@@ -243,7 +243,7 @@
               </div>
             </form>
             </div>
-          </section>
+          </section>-->
 
           <h2>Information</h2>
           <!-- Button trigger modal -->
@@ -337,6 +337,10 @@
       }).done(function( data ) {
           console.log( data );
           var response = data["response"];
+          for (i = 0; i < response.length; i++) {
+            var context = response[i];
+            $('#contextList').append($("<li class='nav-item'><a class='nav-link href='{{domain}}/context/" + context.id + "'>" + context.text + "</a></li>"))
+          }
           // for frame in response {
           //   $("#framesList").append($("
           //   <tr>

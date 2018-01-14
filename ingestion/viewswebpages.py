@@ -206,6 +206,20 @@ def createContext(request):
     newContext.save()
     return HttpResponse(status=200)
 
+def fetchAllContexts(request, usernameInput):
+    possibleMind = Mind.objects.get(username=usernameInput)
+    if possibleMind == None:
+        return HttpResponse(status=403)
+    contexts = Context.objects.filter(mind=possibleMind).order_by('-createdat')
+    contextListJSON = []
+    for context in contexts:
+        contextJSON = {
+            "text":context.text,
+            "createdat_string":unicode(context.createdat)
+        }
+        contextListJSON.append(contextJSON)
+    return JsonResponse({"response":contextListJSON,"secret_message":"osiris reigns"})
+
 @csrf_exempt
 def framesPageAPI(request,usernameInput):
     if usernameInput == None:
