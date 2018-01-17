@@ -73,7 +73,8 @@ def downlinkFrameData(request, frameid, filename):
                 if approx_file_type == "image":
                     content_type="image/" + determineSimpleFormat(foldername+fil) + ";"
                 elif approx_file_type == "sound":
-                    content_type="audio/" + determineSimpleFormat(foldername+fil) + ";"
+                    #content_type="audio/" + determineSimpleFormat(foldername+fil) + ";"
+                    content_type="audio/m4a"
                 return FileResponse(open(foldername + fil, 'rb'),content_type=content_type)
     return HttpResponse(status=404)
 
@@ -85,20 +86,21 @@ def downlinkFrameSliceData(request, frameid, sliceid):
     if possibleFrames == None:
         return HttpResponse(status=401)
     # is there a way to make this recursive? so its higher than 2
-    filename = "session"+str(frameid)+"-part"+str(sliceid)+".m4a"
+    filename = "session"+str(frameid)+"-part"+str(int(sliceid)*30)+".m4a"
     for frame in possibleFrames:
         foldername = frame.foldername
-        files = filesInFrame(foldername)
-        filesInFrameList = []
-        for fil in files:
-            if fil == filename:
-                approx_file_type = determineSimpleType(foldername+fil)
-                content_type = ""
-                if approx_file_type == "image":
-                    content_type="image/" + determineSimpleFormat(foldername+fil) + ";"
-                elif approx_file_type == "sound":
-                    content_type="audio/" + determineSimpleFormat(foldername+fil) + ";"
-                return FileResponse(open(foldername + fil, 'rb'),content_type=content_type)
+        return FileResponse(open(foldername + filename, 'rb'))
+        # files = filesInFrame(foldername)
+        # filesInFrameList = []
+        # for fil in files:
+        #     if fil == filename:
+        #         approx_file_type = determineSimpleType(foldername+fil)
+        #         content_type = ""
+        #         if approx_file_type == "image":
+        #             content_type="image/" + determineSimpleFormat(foldername+fil) + ";"
+        #         elif approx_file_type == "sound":
+        #             content_type="audio/" + determineSimpleFormat(foldername+fil) + ";"
+        #         return FileResponse(open(foldername + fil, 'rb'),content_type=content_type)
     return HttpResponse(status=404)
 
 def loginPage(request):
@@ -215,6 +217,7 @@ def fetchAllContexts(usernameInput):
     print str(len(contexts)) + " contexts for " + usernameInput
     for context in contexts:
         contextJSON = {
+            "id":context.id,
             "text":context.text,
             "createdat_string":unicode(context.createdat)
         }
@@ -267,6 +270,7 @@ def framesOfUsername(usernameInput):
         type_complex = frame.type_complex
         type_simple = frame.type_simple
         format_simple = frame.format_simple
+        context_id = frame.context.id
         print "main file " + main_file
         if main_file != "" and main_file != "NO_FILE": #fucking hell lol
             main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
@@ -274,7 +278,7 @@ def framesOfUsername(usernameInput):
             continue
         frame_id = frame.id
         frameResults = vomitJSONAPIResultstoAPI(frame_id)
-        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
+        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "context_id":context_id, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
         framesMetadataList.append(finalRes)
     return framesMetadataList
 

@@ -1,0 +1,48 @@
+<tr>
+  <td>frame.frame_id</td>
+  <td>frame.context_id</td>
+  <td>frame.notes</td>
+  if (frame.main_file_metadata.metadata.simpletype == "sound") {
+    var soundFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
+    <td><a href="soundFileEndpoint">Original Sound File</a></td>
+  } else if (frame.main_file_metadata.metadata.simpletype == "image") {
+    var imageFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
+    <td><img style="max-width:400px;height:auto;" src="imageFileEndpoint" /></td>
+  } else {
+    <td>Preview</td>
+  }
+  if (frame.main_file_metadata.metadata.simpletype == "sound") {
+    <td>conversation</td>
+  } else {
+    <td>Other File</td>
+  }
+  <td>Download</td>
+</tr>
+
+
+// frame.id, context, notes, preview, type, link
+  var preview = "";
+  var typeS = "";
+  if (frame.main_file_metadata.metadata.simpletype == "sound") {
+    var soundFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
+    preview = '<td><a href="' + soundFileEndpoint + '">Original Sound File</a></td>';
+    typeS = "conversation";
+  } else if (frame.main_file_metadata.metadata.simpletype == "image") {
+    var imageFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
+    preview = '<td><img style="max-width:400px;height:auto;" src="' + imageFileEndpoint +'" /></td>';
+    typeS = "image";
+   else {
+    preview = '<td>Preview</td>';
+    typeS = "file";
+  }
+
+  '<tr>
+    <td>' + frame.frame_id + '</td>
+    <td>' + frame.context_id + '</td>
+    <td>' + frame.notes + '</td>
+    <td>' + preview + '</td>
+    <td>' + typeS + '</td>
+    <td>Download</td>
+</tr>'
+
+'<tr><td>' + frame.frame_id + '</td><td>' + frame.context_id + '</td><td>' + frame.notes + '</td><td>' + preview + '</td><td>' + typeS + '</td><td>Download</td></tr>'
