@@ -103,8 +103,14 @@
           var total = e.totalSize || e.total;
           console.log('xhr progress: ' + Math.round(done/total*100) + '%');
           // var node = document.createTextNode('' + Math.round(done/total*100) + '%');
-          document.getElementById('addFrameButton').value= '' + Math.round(done/total*100) + '%';     // Create a text node
-          document.getElementById('addFrameButton').title= '' + Math.round(done/total*100) + '%';     // Create a text node
+          document.getElementById('addFrameButton').value= '' + Math.round(done/total*100).toString() + '%';     // Create a text node
+          document.getElementById('addFrameButton').title= '' + Math.round(done/total*100).toString() + '%';     // Create a text node
+          if (Math.round(done/total*100) == 100) {
+            $('#addFrameModal').modal('toggle');
+            document.getElementById('addFrameButton').enabled = true;
+            document.getElementById('addFrameButton').value= "Finished!";
+            document.getElementById('addFrameButton').title= "Save!";
+          }
       });
       xhr.addEventListener('load', function(e) {
           console.log('xhr upload complete', e, this.responseText);
@@ -140,6 +146,7 @@
           console.log('xhr upload complete', e, this.responseText);
           document.getElementById('contextCreateButton').enabled = true;
           document.getElementById('contextCreateButton').value= "Finished!";
+          location.reload();
           // document.getElementById('uploadinput').value = '';
           // window.location.href = "/aframepage/" + name.substring(0, name.indexOf('.'));;
       });
@@ -185,7 +192,7 @@
         <nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">
           <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-              <a class="nav-link active" href="#">All Conversations<span class="sr-only">(current)</span></a>
+              <a class="nav-link active" context-id="-1" onclick="filterByCategory('-1')" href="#">All Conversations<span class="sr-only">(current)</span></a>
             </li>
             <!--<li class="nav-item">
               <a class="nav-link" href="#">Reports</a>
@@ -201,6 +208,14 @@
           <h2>Categories</h2>
           <ul id="contextList" class="nav nav-pills flex-column">
           </ul>
+          <form id="contextCreateForm" method="POST" enctype="multipart/form-data" onsubmit="return false;">
+            <div class="form-group" id="loginformid" action="/create-context/" method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <label for="createContextField"></label>
+              <input style="width:65%;display:inline;" name="context" type="text" class="form-control" id="createContextField" aria-describedby="contextNameHelp" placeholder="Create New Context">
+              <button style="width:24%;display:inline;" id="contextCreateButton" onclick="contextCreateAction();" class="btn btn-secondary">Create</button>
+            </div>
+          </form>
 
           <!--<ul class="nav nav-pills flex-column">
             <li class="nav-item">
@@ -331,7 +346,7 @@
           var response = data["response"];
           for (i = 0; i < response.length; i++) {
             var context = response[i];
-            $('#contextList').append($("<li class='nav-item'><a class='nav-link' href='{{domain}}/context/" + context.id + "/?cid="+context.id+"'>" + context.text + "</a></li>"))
+            $('#contextList').append($("<li class='nav-item'><a class='nav-link' context-id='" + context.id + "' onclick='filterByCategory(\"" + context.id + "\")' href='#'>" + context.text + "</a></li>"))
           }
           // for frame in response {
           //   $("#framesList").append($("
@@ -364,18 +379,24 @@
             var typeS = "";
             var classification_labels = "<hr>";
             if (frame.main_file_metadata.metadata.simpletype == "sound") {
-              var translations = frame.parsed_info.speech.audio;
+              var parsed_info = frame.parsed_info;
               var approximateTime = "0m 0s";
-              for (var k=0;k<translations.length;k++) {
-                var minutes = Math.floor(k/2);
-                var seconds = (k*30) % 60;
-                classification_labels += "<p>" + minutes.toString() + "m " + seconds.toString() + "s <br/>" + translations[k].transcript + "</p><audio controls preload='none' src='{{domain}}" + frame.slice_downlink_endpoint + frame.frame_id + "/" + k.toString() + "/' type='audio/m4a'></audio><br/>";
-                approximateTime = minutes.toString() + "m " + seconds.toString() + "s";
+              if (parsed_info.speech == undefined) {
+                approximateTime = "Unknown - Still processing";
+                frame.notes += "<br/>Status: Extracting text...";
+              } else {
+                var translations = parsed_info.speech.audio;
+                for (var k=0;k<translations.length;k++) {
+                  var minutes = Math.floor(k/2);
+                  var seconds = (k*30) % 60;
+                  classification_labels += "<p>" + minutes.toString() + "m " + seconds.toString() + "s <br/>" + translations[k].transcript + "</p><audio controls preload='none' src='{{domain}}" + frame.slice_downlink_endpoint + frame.frame_id + "/" + k.toString() + "/' type='audio/m4a'></audio><br/>";
+                  approximateTime = minutes.toString() + "m " + seconds.toString() + "s";
+                }
               }
+
               var soundFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
               preview = '<td><a href="' + soundFileEndpoint + '" type="audio/m4a" download>Shareable Link to Original Sound File</a><br/><a>Full audio file ( ' + approximateTime + ' ): </a><audio controls preload="none" src="{{domain}}' + frame.main_file_metadata.downlink_endpoint + 'type="audio/m4a"></audio></td>';
               typeS = "conversation";
-
             } else if (frame.main_file_metadata.metadata.simpletype == "image") {
               var imageFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
               preview = '<td><img style="max-width:400px;height:auto;" src="' + imageFileEndpoint +'" /></td>';
@@ -393,7 +414,7 @@
               preview = '<td>Preview</td>';
               typeS = "file";
             }
-            var frameString = '<tr><td>' + frame.frame_id + '</td><td>' + frame.context_id + '</td><td>' + frame.notes + '<br/>' + classification_labels + '</td>' + preview + '<td>' + typeS + '</td><td>Download</td></tr>';
+            var frameString = '<tr frame-id="' + frame.frame_id + '" context-id="' + frame.context_id + '"><td>' + frame.frame_id + '</td><td>' + frame.context_id + '</td><td>' + frame.notes + '<br/>' + classification_labels + '</td>' + preview + '<td>' + typeS + '</td><td>Download</td></tr>';
             // console.log("attaching frame " + frameString);
             var tableRow = $(frameString);
             // console.log(frameString);
@@ -417,6 +438,37 @@
       console.log("hurrump");
       loadContexts("{{username}}");
       loadFrames("{{username}}");
+    }
+    function filterByCategory(categoryIdString) {
+      if (categoryIdString == -1) {
+        $('tr[context-id]').each(function() {
+            // `this` is the div
+            console.log("holy shit show");
+            $(this).show();
+        });
+      } else {
+        console.log("FILTERING BY " + categoryIdString);
+        $('tr[context-id]').each(function() {
+            // `this` is the div
+            console.log("holy shit hide");
+            $(this).hide();
+        });
+        $('tr[context-id="' + categoryIdString + '"]').each(function() {
+            // `this` is the div
+            console.log("holy shit show");
+            $(this).show();
+        });
+      }
+      $('a[class="nav-link active"]').each(function() {
+          // `this` is the div
+          console.log("shut down active category");
+          $(this).attr("class", "nav-link");
+      });
+      $('a[context-id="' + categoryIdString + '"]').each(function() {
+          // `this` is the div
+          console.log("activate category");
+          $(this).attr("class", "nav-link active");
+      });
     }
     </script>
   </body>

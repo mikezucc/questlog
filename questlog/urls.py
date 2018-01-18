@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^process/(?P<usernameInput>\w+)/', quanty.processMind, name='processBOnk'),
     url(r'^mymind/', ingestionPages.mindPageCurrentUser, name='mindPageCurrentUser'),
     url(r'^mind/(?P<usernameInput>\w+)/', ingestionPages.mindPage, name='mindPage'),
+    url(r'^context/(?P<contextId>\w+)/', ingestionPages.contextPage, name='contextPage'),
     url(r'^api/mind-post/', ingestionPages.mindPageAPIPOST, name='mindPageAPIPOST'),
     url(r'^api/mind/(?P<usernameInput>\w+)/', ingestionPages.mindPageAPIV2, name='mindPageAPIV2'),
     url(r'^api/frames/(?P<usernameInput>\w+)/', ingestionPages.mindPageAPIV2, name='framesPageAPI'),

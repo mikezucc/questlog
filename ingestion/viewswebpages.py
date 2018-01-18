@@ -180,7 +180,7 @@ def mindPage(request, usernameInput):
         authed = False
         return redirect('/login/')
     framesMetadataList = framesOfUsername(usernameInput)
-    return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList})
+    return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList, "context":"mind"})
 
 def uploadPage(request):
     currentUser = ""
@@ -224,6 +224,45 @@ def fetchAllContexts(usernameInput):
         contextListJSON.append(contextJSON)
     return contextListJSON
 
+
+def contextPage(request, contextId):
+    currentUser = ""
+    try:
+        currentUser = request.session['username']
+    except:
+        print "shit lmao"
+        return redirect('/login/')
+    authed = True
+    possibleMind = Mind.objects.get(username=currentUser)
+    if possibleMind == None:
+        return HttpResponse(status=403)
+    contexts = Context.objects.all().filter(id=contextId,mind=possibleMind)
+    if len(contexts) == 0:
+        return redirect('/mind/'+currentUser+'/')
+    context = contexts[0]
+    return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'context_name':context.text, "mode":"context"})
+
+def contextPageAPI(contextId):
+    try:
+        currentUser = request.GET['context']
+    except:
+        print "shit lmao"
+        return HttpResponse(status=401)
+    possibleMind = Mind.objects.get(username=currentUser)
+    if possibleMind == None:
+        return {"status":"no user"}
+    contexts = Context.objects.all().filter(id=contextId,mind=possibleMind)
+    if len(contexts) == 0:
+        return {"status":"no contexts"}
+    context = contexts[0]
+    contextJSON = {
+        "id":context.id,
+        "text":context.text,
+        "createdat_string":unicode(context.createdat),
+        "frames":framesOfContext(context)
+    }
+    return {"response":contextJSON,"status":"good"}
+
 @csrf_exempt
 def framesPageAPI(request,usernameInput):
     if usernameInput == None:
@@ -259,6 +298,35 @@ def framesOfUsername(usernameInput):
         print usernameInput + " HAS NO FRAMES"
         return JsonResponse(json.dumps([])) # ;mao Im a god
     print "user " + usernameInput + " has " + str(len(possibleFrames)) + " frames"
+    frameMetadata = {}
+    framesMetadataList = []
+    mdb_client = MongoClient('localhost', 27017)
+    mdb_spitData = mdb_client.spitDataVZero
+    for frame in possibleFrames:
+        # determing main file shit
+        main_file = frame.main_file
+        main_file_metadata = {}
+        type_complex = frame.type_complex
+        type_simple = frame.type_simple
+        format_simple = frame.format_simple
+        context_id = frame.context.id
+        print "main file " + main_file
+        if main_file != "" and main_file != "NO_FILE": #fucking hell lol
+            main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
+        else:
+            continue
+        frame_id = frame.id
+        frameResults = vomitJSONAPIResultstoAPI(frame_id)
+        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "context_id":context_id, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
+        framesMetadataList.append(finalRes)
+    return framesMetadataList
+
+def framesOfContext(context):
+    possibleFrames = Frame.objects.filter(context=context).order_by('-createdat')
+    if possibleFrames == None:
+        print context + " HAS NO FRAMES"
+        return []
+    print "context " + str(context.id) + " has " + str(len(possibleFrames)) + " frames"
     frameMetadata = {}
     framesMetadataList = []
     mdb_client = MongoClient('localhost', 27017)
