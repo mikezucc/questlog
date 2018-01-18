@@ -205,7 +205,7 @@
             </li>-->
           </ul>
 
-          <h2>Categories</h2>
+          <h2 style="padding-left:10px;">Categories</h2>
           <ul id="contextList" class="nav nav-pills flex-column">
           </ul>
           <form id="contextCreateForm" method="POST" enctype="multipart/form-data" onsubmit="return false;">
@@ -255,7 +255,7 @@
 
           <!-- Button trigger modal -->
           <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#addFrameModal">
-            Add Conversation
+            Upload Conversation
           </button>
 
           <!-- Modal -->
@@ -286,15 +286,12 @@
             </div>
           </div>
           <div class="table-responsive">
-            <table id="framesList" class="table table-striped">
+            <table id="framesList" class="table table-hover">
               <thead>
                 <tr>
-                  <th>#</th>
                   <th>Category</th>
-                  <th>Notes</th>
-                  <th>Preview</th>
+                  <th>Records</th>
                   <th>Tags</th>
-                  <th>Link</th>
                 </tr>
               </thead>
               <tbody>
@@ -395,11 +392,11 @@
               }
 
               var soundFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
-              preview = '<td><a href="' + soundFileEndpoint + '" type="audio/m4a" download>Shareable Link to Original Sound File</a><br/><a>Full audio file ( ' + approximateTime + ' ): </a><audio controls preload="none" src="{{domain}}' + frame.main_file_metadata.downlink_endpoint + 'type="audio/m4a"></audio></td>';
+              preview = '<a href="' + soundFileEndpoint + '" type="audio/m4a" download>Shareable Link to Original Sound File</a><br/><a>Full audio file ( ' + approximateTime + ' ): </a><audio controls preload="none" src="{{domain}}' + frame.main_file_metadata.downlink_endpoint + 'type="audio/m4a"></audio>';
               typeS = "conversation";
             } else if (frame.main_file_metadata.metadata.simpletype == "image") {
               var imageFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
-              preview = '<td><img style="max-width:400px;height:auto;" src="' + imageFileEndpoint +'" /></td>';
+              preview = '<img style="max-width:400px;height:auto;" src="' + imageFileEndpoint +'" />';
               typeS = "image";
               if (frame.parsed_info.ocr_text.texts && frame.parsed_info.ocr_text.texts.length > 0) {
                   classification_labels += "<pre>" + frame.parsed_info.ocr_text.texts[0] + "</pre>";
@@ -414,7 +411,7 @@
               preview = '<td>Preview</td>';
               typeS = "file";
             }
-            var frameString = '<tr frame-id="' + frame.frame_id + '" context-id="' + frame.context_id + '"><td>' + frame.frame_id + '</td><td>' + frame.context_id + '</td><td>' + frame.notes + '<br/>' + classification_labels + '</td>' + preview + '<td>' + typeS + '</td><td>Download</td></tr>';
+            var frameString = '<tr frame-id="' + frame.frame_id + '" context-id="' + frame.context_id + '"><td>' + frame.context_name + '</td><td>' + frame.notes + '<br/>' + classification_labels + preview + '</td><<td>' + typeS + '</td></tr>';
             // console.log("attaching frame " + frameString);
             var tableRow = $(frameString);
             // console.log(frameString);

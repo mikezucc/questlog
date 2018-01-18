@@ -180,7 +180,7 @@ def mindPage(request, usernameInput):
         authed = False
         return redirect('/login/')
     framesMetadataList = framesOfUsername(usernameInput)
-    return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList, "context":"mind"})
+    return render(request, MINDPAGETEMPLATE, {'domain': DOMAIN_ENDPOINT, 'statuscode': 'recall', 'authed':authed, 'username':usernameInput, 'frames': framesMetadataList, "mode":"mind"})
 
 def uploadPage(request):
     currentUser = ""
@@ -310,6 +310,10 @@ def framesOfUsername(usernameInput):
         type_simple = frame.type_simple
         format_simple = frame.format_simple
         context_id = frame.context.id
+        contexts = Context.objects.all().filter(id=context_id,mind=possibleMind)
+        context_name = ""
+        if len(contexts) > 0:
+            context_name = contexts[0].text
         print "main file " + main_file
         if main_file != "" and main_file != "NO_FILE": #fucking hell lol
             main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
@@ -317,7 +321,7 @@ def framesOfUsername(usernameInput):
             continue
         frame_id = frame.id
         frameResults = vomitJSONAPIResultstoAPI(frame_id)
-        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "context_id":context_id, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
+        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "context_id":context_id, "context_name":context_name, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
         framesMetadataList.append(finalRes)
     return framesMetadataList
 
@@ -339,6 +343,10 @@ def framesOfContext(context):
         type_simple = frame.type_simple
         format_simple = frame.format_simple
         context_id = frame.context.id
+        contexts = Context.objects.all().filter(id=context_id,mind=possibleMind)
+        context_name = ""
+        if len(contexts) > 0:
+            context_name = contexts[0].text
         print "main file " + main_file
         if main_file != "" and main_file != "NO_FILE": #fucking hell lol
             main_file_metadata = {'metadata':{'type':type_complex,'simpletype':type_simple}, "createdat_string":frame.createdat_string,'filename':main_file,'downlink_endpoint':"/downlink/"+str(frame.id)+"/"+main_file+"/"}
@@ -346,7 +354,7 @@ def framesOfContext(context):
             continue
         frame_id = frame.id
         frameResults = vomitJSONAPIResultstoAPI(frame_id)
-        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "context_id":context_id, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
+        finalRes = {"main_file_metadata":main_file_metadata, "notes":frame.notes, "context_id":context_id, "context_name":context_name, "notes":frame.notes, "parsed_info":frameResults, 'frame_id':frame.id, "slice_downlink_endpoint":"/slice-downlink/"}
         framesMetadataList.append(finalRes)
     return framesMetadataList
 
