@@ -85,6 +85,12 @@
       max-width:400px;
     }
 
+    #upload_data_button {
+      position: fixed;
+      right: 50px;
+      bottom: 50px;
+    }
+
     </style>
   </head>
   <script>
@@ -170,7 +176,10 @@
         <div class="collapse navbar-collapse" id="navbarsExampleDefault">
           <ul class="navbar-nav mr-auto">
             <li class="nav-item active">
-              <a class="nav-link" href="#">Conversations <span class="sr-only">(current)</span></a>
+              <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Notes</a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">Tags</a>
@@ -192,7 +201,7 @@
         <nav class="col-sm-3 col-md-2 d-none d-sm-block bg-light sidebar">
           <ul class="nav nav-pills flex-column">
             <li class="nav-item">
-              <a class="nav-link active" context-id="-1" onclick="filterByCategory('-1')" href="#">All Conversations<span class="sr-only">(current)</span></a>
+              <a class="nav-link active" context-id="-1" onclick="filterByCategory('-1')" href="#">Feed<span class="sr-only">(current)</span></a>
             </li>
             <!--<li class="nav-item">
               <a class="nav-link" href="#">Reports</a>
@@ -254,8 +263,8 @@
           </section>-->
 
           <!-- Button trigger modal -->
-          <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#addFrameModal">
-            Upload Conversation
+          <button id="upload_data_button" type="button" class="btn btn-primary" data-toggle="modal" data-target="#addFrameModal">
+            Upload
           </button>
 
           <!-- Modal -->
@@ -288,11 +297,11 @@
           <div class="table-responsive">
             <table id="framesList" class="table">
               <thead>
-                <tr>
+                <!--<tr>
                   <th>Context</th>
                   <th>Records</th>
                   <th>Tags</th>
-                </tr>
+                </tr>-->
               </thead>
               <tbody>
                 <!--{% for frame in frames %}
@@ -386,13 +395,13 @@
                 for (var k=0;k<translations.length;k++) {
                   var minutes = Math.floor(k/2);
                   var seconds = (k*30) % 60;
-                  classification_labels += "<p>" + minutes.toString() + "m " + seconds.toString() + "s <br/>" + translations[k].transcript + "</p><audio controls preload='none' src='{{domain}}" + frame.slice_downlink_endpoint + frame.frame_id + "/" + k.toString() + "/' type='audio/m4a'></audio><br/>";
+                  classification_labels += "<p>" + minutes.toString() + "m " + seconds.toString() + "s <br/>" + translations[k].transcript + "</p><audio id='audioslice-" + frame.frame_id + "-" + k.toString() + "' style='display:none;' controls preload='none' src='{{domain}}" + frame.slice_downlink_endpoint + frame.frame_id + "/" + k.toString() + "/' type='audio/m4a'></audio><br/>";
                   approximateTime = minutes.toString() + "m " + seconds.toString() + "s";
                 }
               }
 
               var soundFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
-              preview = '<a href="' + soundFileEndpoint + '" type="audio/m4a" download>Shareable Link to Original Sound File</a><br/><a>Full audio file ( ' + approximateTime + ' ): </a><audio controls preload="none" src="{{domain}}' + frame.main_file_metadata.downlink_endpoint + 'type="audio/m4a"></audio>';
+              preview = '<a href="' + soundFileEndpoint + '" type="audio/m4a" download></a><br/><a>Full audio file ( ' + approximateTime + ' ): </a><audio controls preload="none" src="{{domain}}' + frame.main_file_metadata.downlink_endpoint + 'type="audio/m4a"></audio>';
               typeS = "conversation";
             } else if (frame.main_file_metadata.metadata.simpletype == "image") {
               var imageFileEndpoint = "{{domain}}"+frame.main_file_metadata.downlink_endpoint;
@@ -411,7 +420,7 @@
               preview = '<td>Preview</td>';
               typeS = "file";
             }
-            var frameString = '<tr frame-id="' + frame.frame_id + '" context-id="' + frame.context_id + '"><td>' + frame.context_name + '</td><td>' + frame.notes + '<br/>' + classification_labels + preview + '</td><<td>' + typeS + '</td></tr>';
+            var frameString = '<tr frame-id="' + frame.frame_id + '" context-id="' + frame.context_id + '"><td>' + frame.context_name + '</td><td><h3>' + frame.notes + '</h3><p>' + frame.main_file_metadata.createdat_string + '<br/>' + preview + classification_labels + '</td><<td>' + typeS + '</td></tr>';
             // console.log("attaching frame " + frameString);
             var tableRow = $(frameString);
             // console.log(frameString);
@@ -430,6 +439,12 @@
           //   </tr>");
           // }
       });
+      function createTagsField(frame_id, slice_id, tags) {
+        var tagsForm = $('<form id="tags' + frame_id + '-' + slice_id + '" method="POST" enctype="multipart/form-data" onsubmit="return false;"><div class="form-group" id="createTagsFormGroup' + frame_id + '-' + slice_id + '" action="/submit-tags/" method="post" enctype="multipart/form-data">' + "{% csrf_token %}" + '<textarea class="form-control" id="exampleTextarea" rows="3">' + tags + '</textarea></div></form>');
+      }
+      function tagsFieldDidUpdate() {
+
+      }
     }
     window.onload = function(){
       console.log("hurrump");
