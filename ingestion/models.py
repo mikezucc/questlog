@@ -32,6 +32,28 @@ class Frame(models.Model):
     format_simple = models.CharField(max_length=300, default="")
     metadata = {}
 
+# Keeps track of all unique identities related to a user
+class Conversant(models.Model):
+    owner = models.ForeignKey(Mind, on_delete=models.CASCADE)
+    relative_mind = models.ForeignKey(Mind, on_delete=models.CASCADE, blank=True, null=True)
+    human_name = models.CharField(max_length=200)
+
+# Links
+class ImportantConversationChunks(models.Model):
+    owner = models.ForeignKey(Mind, on_delete=models.CASCADE)
+    relative_mind = models.ForeignKey(Conversant, on_delete=models.CASCADE, blank=True, null=True)
+    frame = models.ForeignKey(Frame, on_delete=models.CASCADE, blank=True, null=True)
+
+class Tag(models.Model):
+    owner = models.ForeignKey(Mind, on_delete=models.CASCADE)
+    term_raw = models.CharField(max_length=100)
+    metadata = {}
+
+    def toDictionary():
+        return {"owner":owner,
+                "term_raw":term_raw,
+                "createdat":"{}".format(createdat)}
+
 # these appear to be used with the audio transcription
 class TermSet(models.Model):
     user_parent = models.ForeignKey(Mind, on_delete=models.CASCADE)
