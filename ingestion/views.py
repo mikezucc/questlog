@@ -43,7 +43,7 @@ from quanty import *
 
 # These might be for OS X (?) <- ?
 # UPLOAD_DIR_2 = os.getcwd().replace("\\","/")  + "/daily/uploads/"
-# this shit is duped viewswebpages.py ok dont fuck this up
+# this shit is duped viewswebpages.py ok dont funk this up
 UPLOAD_DIR_3 = os.getcwd().replace("\\","/") + "/ingestion/frames/"
 
 # Create your views here.
@@ -75,7 +75,7 @@ def ingestFiles(request, usernameInput):
 
     users = Mind.objects.filter(username=usernameInput)
     if len(users) == 0:
-        #maybe upload to a random fucking folder i dont know??
+        #maybe upload to a random funking folder i dont know??
         print "well this is a hodge podge you see"
         return HttpResponse(status=403)
     mind = users[0]
@@ -84,7 +84,7 @@ def ingestFiles(request, usernameInput):
         notes = request.POST['createFrameNotesField']
     except:
         notes = ""
-        print "well fuck"
+        print "well funk"
 
     try:
         defaultContext = Context.objects.all().filter(mind=mind).order_by('-createdat')[0]
@@ -139,7 +139,7 @@ def tryWithOneFileRead(request, usernameInput):
 
     users = Mind.objects.filter(username=usernameInput)
     if len(users) == 0:
-        #maybe upload to a random fucking folder i dont know??
+        #maybe upload to a random funking folder i dont know??
         print "well this is a hodge podge you see"
         return HttpResponse(status=403)
     mind = users[0]
