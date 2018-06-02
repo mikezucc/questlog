@@ -21,6 +21,9 @@ Organize professional relationships.
 3. Tagging/ indexing of annotations for recall
 4. Association of conversations to longstanding "identities"
 
+## Random thoughts
+https://github.com/mikezucc/questlog/blob/master/relationships.txt
+
 ## Entities within the tool
 1. Conversations
 2. Snippets
