@@ -70,7 +70,7 @@ def ingestFiles(request, usernameInput):
     try:
         files = request.FILES
     except:
-        print "portal >> 0 || bitch failed"
+        print "portal >> 0 || FILES POST failed"
         return HttpResponse(status=400)
 
     users = Mind.objects.filter(username=usernameInput)
@@ -134,7 +134,7 @@ def tryWithOneFileRead(request, usernameInput):
     try:
         files = request.FILE
     except:
-        print "portal >> 0 || bitch failed"
+        print "portal >> 0 || SINGLE FILE POST failed"
         return HttpResponse(status=400)
 
     users = Mind.objects.filter(username=usernameInput)
