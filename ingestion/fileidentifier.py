@@ -52,14 +52,14 @@ def determineSimpleType(filepathURI):
             print "checking " + slugFileType + " against "
             print imageFileTypes
             if imageFileTypes.index(slugFileType) != None:
-                print "ISSA IMAGE BITCH HA HA"
+                print "ISSA IMAGE HA HA"
                 return "image"
         except:
             print "not an image"
 
         try:
             if soundFileTypes.index(slugFileType):
-                print "ISSA SOUND BITCH HA HA"
+                print "ISSA SOUND HA HA"
                 return "sound"
         except:
             print "not an soundfile"
@@ -81,14 +81,14 @@ def determineSimpleFormat(filepathURI):
             print "checking " + slugFileType + " against "
             print imageFileTypes
             if imageFileTypes.index(slugFileType) != None:
-                print "ISSA IMAGE BITCH HA HA"
+                print "ISSA IMAGE HA HA"
                 return slugFileType
         except:
             print "not an image"
 
         try:
             if soundFileTypes.index(slugFileType):
-                print "ISSA SOUND BITCH HA HA"
+                print "ISSA SOUND HA HA"
                 return slugFileType
         except:
             print "not an soundfile"
