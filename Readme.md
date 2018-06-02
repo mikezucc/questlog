@@ -20,6 +20,7 @@ Organize professional relationships.
 2. Partitioning conversation into chunks (highlighting)
 3. Tagging/ indexing of annotations for recall
 4. Association of conversations to longstanding "identities"
+5. Annotation and markup of images
 
 ## Random thoughts
 https://github.com/mikezucc/questlog/blob/master/relationships.txt
