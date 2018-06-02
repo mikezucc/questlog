@@ -21,6 +21,7 @@ Organize professional relationships.
 3. Tagging/ indexing of annotations for recall
 4. Association of conversations to longstanding "identities"
 5. Annotation and markup of images
+6. Store any resulting entities as homogenous set of later described frames
 
 ## Random thoughts
 https://github.com/mikezucc/questlog/blob/master/relationships.txt
